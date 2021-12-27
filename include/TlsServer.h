@@ -1,3 +1,14 @@
+/**
+ * @file TlsServer.h
+ * @author Nils Henrich
+ * @brief TLS server for encrypted data transfer with authentication.
+ * @version 1.0
+ * @date 2021-12-27
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #ifndef TLSSERVER_H
 #define TLSSERVER_H
 
@@ -5,112 +16,129 @@
 
 #include "NetworkListener.h"
 
-namespace HS_Networking
+namespace networking
 {
-struct SSL_Deleter
-{
-    void operator()(SSL* ssl)
-    {
-        SSL_free(ssl);
-        return;
-    }
-};
-class TlsServer: public NetworkListener<SSL, SSL_Deleter>
-{
-public:
-    TlsServer();
-    virtual ~TlsServer();
+   // Deleter for SSL objects
+   struct SSL_Deleter
+   {
+      void operator()(SSL *ssl)
+      {
+         SSL_free(ssl);
+         return;
+      }
+   };
 
-    /**
-     * Wird aufgerufen, sobald der TLS Server eine neue Nachricht empfängt
-     * Diese Methode muss von erbenden Klassen überschrieben werden
-     * @param tlsClientId
-     * @param tlsMsgFromClient
-     */
-    virtual void workOnMessage_TlsServer(const int tlsClientId, const std::string tlsMsgFromClient) = 0;
+   class TlsServer : public NetworkListener<SSL, SSL_Deleter>
+   {
+   public:
+      TlsServer();
+      virtual ~TlsServer();
 
-    /**
-     * Wird aufgerufen, sobald eine Verbindung des TLS Servers abreißt
-     * Diese Methode muss von erbenden Klassen überschrieben werden
-     * @param tlsClientId
-     */
-    virtual void workOnClosed_TlsServer(const int tlsClientId) = 0;
+      /**
+       * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
+       * This method must be implemented in derived classes.
+       * 
+       * @param tlsClientId 
+       * @param tlsMsgFromClient 
+       */
+      virtual void workOnMessage_TlsServer(const int tlsClientId, const std::string tlsMsgFromClient) = 0;
 
-    /**
-     * Teil des Subjects aus Zertifikat einer verbundenen Komponente auslesen
-     * @param clientId
-     * @param subjPart
-     * @return string
-     */
-    std::string getSubjPartFromClientCert(const int clientId, const SSL* tlsSocket, const int subjPart);
+      /**
+       * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
+       * This method must be implemented in derived classes.
+       * 
+       * @param tlsClientId 
+       */
+      virtual void workOnClosed_TlsServer(const int tlsClientId) = 0;
 
-private:
+      /**
+       * @brief Get specific subject part as string of the certificate of a specific connected client (Identified by its TCP ID).
+       * 
+       * @param clientId 
+       * @param tlsSocket 
+       * @param subjPart 
+       * @return std::string 
+       */
+      std::string getSubjPartFromClientCert(const int clientId, const SSL *tlsSocket, const int subjPart);
 
-    /**
-     * Initialisieren des TLS Server
-     * @param pathToCaCert
-     * @param pathToCert
-     * @param pathToPrivKey
-     * @return int (0 := OK, ~0 := Fehler)
-     */
-    int init(const char* const pathToCaCert,
-             const char* const pathToCert,
-             const char* const pathToPrivKey) override final;
+   private:
+      /**
+       * @brief Initialize the server (Setup enryyption settings).
+       * Setting: Encryption via TLS, force client authentication, authenticate self with certificate.
+       * Checking certificate validity with CA certificate.
+       * 
+       * @param pathToCaCert 
+       * @param pathToCert 
+       * @param pathToPrivKey 
+       * @return int 
+       */
+      int init(const char *const pathToCaCert,
+               const char *const pathToCert,
+               const char *const pathToPrivKey) override final;
 
-    /**
-     * Deinitialisieren des Listeners
-     */
-    void deinit() override final;
+      /**
+       * @brief Deinitialize the server (Close all encrypted connections).
+       * 
+       */
+      void deinit() override final;
 
-    /**
-     * TLS Handshake durchführen
-     * @param clientId
-     * @return SSL* (nullptr := Fehler -> Empfangen abbrechen, Sonst := Initialisierung erfolgreich -> Nachrichten empfangen)
-     */
-    SSL* connectionInit(const int clientId) override final;
+      /**
+       * @brief Initialize connection to a specific client (Identified by its TCP ID) (Do TLS handshake).
+       * 
+       * @param clientId 
+       * @return SSL* 
+       */
+      SSL *connectionInit(const int clientId) override final;
 
-    /**
-     * TLS herunterfahren
-     * @param socket
-     */
-    void connectionDeinit(SSL* socket) override final;
+      /**
+       * @brief Deinitialize connection to a specific client (Identified by its TCP ID) (Do TLS shutdown).
+       * 
+       * @param socket 
+       */
+      void connectionDeinit(SSL *socket) override final;
 
-    /**
-     * Nächste empfangene Nachricht empfangen.
-     * @param socket
-     * @return string ("" := Empfangen fehlgeschlagen, sonst := Inhalt der Nachricht)
-     */
-    std::string readMsg(SSL* socket) override final;
+      /**
+       * @brief Read data from a specific client (Identified by its TCP ID).
+       * This method blocks until data is available.
+       * If no data is available, it returns an empty string.
+       * 
+       * @param socket 
+       * @return std::string 
+       */
+      std::string readMsg(SSL *socket) override final;
 
-    /**
-     * Nachricht an einen TLS Client senden.
-     * Der Client muss anhand seiner TCP ID identifiziert werden.
-     * @param clientId
-     * @param msg
-     * @return bool (True := Senden erfolgreich, False := Senden fehlgeschlagen)
-     */
-    bool writeMsg(const int clientId, const std::string& msg) override final;
+      /**
+       * @brief Send raw data to a specific client (Identified by its TCP ID).
+       * 
+       * @param clientId 
+       * @param msg 
+       * @return true 
+       * @return false 
+       */
+      bool writeMsg(const int clientId, const std::string &msg) override final;
 
-    /**
-     * Eingehende Nachrichten bearbeiten
-     * @param clientId
-     * @param msg
-     */
-    void workOnMessage(const int clientId, const std::string msg) override final;
+      /**
+       * @brief Just call specific handler method for TLS server (workOnMessage_TlsServer).
+       * 
+       * @param clientId 
+       * @param msg 
+       */
+      void workOnMessage(const int clientId, const std::string msg) override final;
 
-    /**
-     * Abgerissene Verbindungen bearbeiten
-     * @param clientId
-     */
-    void workOnClosed(const int clientId) override final;
+      /**
+       * @brief Just call specific handler method for TLS server (workOnClosed_TlsServer).
+       * 
+       * @param clientId 
+       */
+      void workOnClosed(const int clientId) override final;
 
-    // TLS Context des Servers
-    SSL_CTX* serverContext {nullptr};
+      // TLS context of the server
+      SSL_CTX *serverContext{nullptr};
 
-    // Object kann nicht kopiert werden
-    TlsServer(const TlsServer&) = delete;
-    TlsServer& operator = (const TlsServer&) = delete;
-};
+      // Disallow copy
+      TlsServer(const TlsServer &) = delete;
+      TlsServer &operator=(const TlsServer &) = delete;
+   };
 }
 
 #endif // TLSSERVER_H
