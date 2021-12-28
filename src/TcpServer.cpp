@@ -11,7 +11,7 @@ int TcpServer::init(const char *const,
                     const char *const,
                     const char *const)
 {
-    return NETWORKING_START_OK;
+    return NETWORKLISTENER_START_OK;
 }
 
 void TcpServer::deinit()

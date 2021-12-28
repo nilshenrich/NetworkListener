@@ -76,14 +76,14 @@ namespace networking
 
         /**
          * @brief Starts the listener.
-         * If listener was started successfully (return value NETWORKING_START_OK), the listener can accept new connections and send and receive data.
+         * If listener was started successfully (return value NETWORKLISTENER_START_OK), the listener can accept new connections and send and receive data.
          * If encryption should be used, the server must be started with the correct path to the CA certificate and the correct path to the certificate and key file.
          * 
          * @param port 
          * @param pathToCaCert 
          * @param pathToCert 
          * @param pathToPrivKey 
-         * @return int (NETWORKING_START_OK if successful, see NetworkListenerDefines.h for other return values)
+         * @return int (NETWORKLISTENER_START_OK if successful, see NetworkListenerDefines.h for other return values)
          */
         virtual int start(const int port,
                           const char *const pathToCaCert = nullptr,
@@ -263,7 +263,7 @@ namespace networking
             cerr << typeid(this).name() << "::" << __func__ << ": The port " << port << " couldn't be used" << endl;
 #endif // DEVELOP
 
-            return NETWORKING_ERROR_START_WRONG_PORT;
+            return NETWORKLISTENER_ERROR_START_WRONG_PORT;
         }
 
         // Initialize the listener and return error if it fails
@@ -283,7 +283,7 @@ namespace networking
             // Stop the listener
             stop();
 
-            return NETWORKING_ERROR_START_CREATE_SOCKET;
+            return NETWORKLISTENER_ERROR_START_CREATE_SOCKET;
         }
 
         // Set options on the TCP socket for the listener to accept new connections.
@@ -299,7 +299,7 @@ namespace networking
             // Stop the listener
             stop();
 
-            return NETWORKING_ERROR_START_SET_SOCKET_OPT;
+            return NETWORKLISTENER_ERROR_START_SET_SOCKET_OPT;
         }
 
         // Initialize the socket address for the listener.
@@ -319,7 +319,7 @@ namespace networking
             // Stop the listener
             stop();
 
-            return NETWORKING_ERROR_START_BIND_PORT;
+            return NETWORKLISTENER_ERROR_START_BIND_PORT;
         }
 
         // Start listening on the TCP socket for the listener to accept new connections.
@@ -332,7 +332,7 @@ namespace networking
             // Stop the listener
             stop();
 
-            return NETWORKING_ERROR_START_LISTENER;
+            return NETWORKLISTENER_ERROR_START_LISTENER;
         }
 
         // Listener is now running
@@ -377,7 +377,7 @@ namespace networking
         using namespace std;
 
         // Extend message with start and end characters and send it
-        return writeMsg(clientId, string{NETWORKING_CHAR_TRANSFER_START} + msg + string{NETWORKING_CHAR_TRANSFER_END});
+        return writeMsg(clientId, string{NETWORKLISTENER_CHAR_TRANSFER_START} + msg + string{NETWORKLISTENER_CHAR_TRANSFER_END});
     }
 
     template <class SocketType, class SocketDeleter>
@@ -507,12 +507,12 @@ namespace networking
                 switch (c)
                 {
                 // Start of message -> empty buffer
-                case NETWORKING_CHAR_TRANSFER_START:
+                case NETWORKLISTENER_CHAR_TRANSFER_START:
                     buffer.clear();
                     break;
 
                 // End of message -> process the message (Buffer gets cleared by move)
-                case NETWORKING_CHAR_TRANSFER_END:
+                case NETWORKLISTENER_CHAR_TRANSFER_END:
 #ifdef DEVELOP
                     cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
 #endif // DEVELOP

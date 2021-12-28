@@ -24,7 +24,7 @@ int TlsServer::init(const char *const pathToCaCert,
 
         stop();
 
-        return NETWORKING_ERROR_START_SET_CONTEXT;
+        return NETWORKLISTENER_ERROR_START_SET_CONTEXT;
     }
 
     // Load CA certificate
@@ -37,7 +37,7 @@ int TlsServer::init(const char *const pathToCaCert,
 
         stop();
 
-        return NETWORKING_ERROR_START_WRONG_CA_PATH;
+        return NETWORKLISTENER_ERROR_START_WRONG_CA_PATH;
     }
 
     // Set CA certificate as verification certificate to verify client certificate
@@ -53,7 +53,7 @@ int TlsServer::init(const char *const pathToCaCert,
 
         stop();
 
-        return NETWORKING_ERROR_START_WRONG_CERT_PATH;
+        return NETWORKLISTENER_ERROR_START_WRONG_CERT_PATH;
     }
 
     // Load server private key
@@ -66,7 +66,7 @@ int TlsServer::init(const char *const pathToCaCert,
 
         stop();
 
-        return NETWORKING_ERROR_START_WRONG_KEY_PATH;
+        return NETWORKLISTENER_ERROR_START_WRONG_KEY_PATH;
     }
 
     // Check if the certificate and the private key match
@@ -79,7 +79,7 @@ int TlsServer::init(const char *const pathToCaCert,
 
         stop();
 
-        return NETWORKING_ERROR_START_WRONG_KEY;
+        return NETWORKLISTENER_ERROR_START_WRONG_KEY;
     }
 
     // Set TLS mode (Auto retry)
@@ -91,7 +91,7 @@ int TlsServer::init(const char *const pathToCaCert,
     // Check client certificate (CA certificate must be direct issuer)
     SSL_CTX_set_verify_depth(serverContext, 1);
 
-    return NETWORKING_START_OK;
+    return NETWORKLISTENER_START_OK;
 }
 
 void TlsServer::deinit()
