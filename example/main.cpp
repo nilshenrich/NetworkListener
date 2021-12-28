@@ -33,7 +33,19 @@ public:
         TcpServer::start(8081);
 
         // Start TLS server
-        TlsServer::start(8082, "keys/ca/ca_cert.pem", "keys/server/server_cert.pem", "keys/server/server_key.pem");
+        TlsServer::start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
+
+        return;
+    }
+
+    // Stop TCP and TLS server
+    void stop()
+    {
+        // Stop TCP server
+        TcpServer::stop();
+
+        // Stop TLS server
+        TlsServer::stop();
 
         return;
     }
@@ -77,6 +89,9 @@ int main()
 
     // Wait for 10 seconds
     this_thread::sleep_for(10s);
+
+    // Stop server
+    server.stop();
 
     return 0;
 }
