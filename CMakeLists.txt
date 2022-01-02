@@ -23,12 +23,15 @@ target_compile_options(tcpServer PUBLIC -fexceptions -O3)
 
 # Use C++17 standard
 set_target_properties(tlsServer PROPERTIES
+    PUBLIC_HEADER "include/TlsServer.h;include/NetworkListener.h;include/NetworkingDefines.h"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)
 set_target_properties(tcpServer PROPERTIES
+    PUBLIC_HEADER "include/TcpServer.h;include/NetworkListener.h;include/NetworkingDefines.h"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Install rule (copy to install directory)
 install(TARGETS tlsServer tcpServer
-    LIBRARY DESTINATION lib/NetworkListener)
+    LIBRARY DESTINATION lib/NetworkListener
+    PUBLIC_HEADER DESTINATION include/NetworkListener)
