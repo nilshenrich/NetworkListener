@@ -23,10 +23,14 @@ target_compile_options(tcpServer PUBLIC -fexceptions -O3)
 
 # Use C++17 standard
 set_target_properties(tlsServer PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
     PUBLIC_HEADER "include/TlsServer.h;include/NetworkListener.h;include/NetworkingDefines.h"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)
 set_target_properties(tcpServer PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
     PUBLIC_HEADER "include/TcpServer.h;include/NetworkListener.h;include/NetworkingDefines.h"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)
