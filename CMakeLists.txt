@@ -4,8 +4,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project name
-project(tlsServer VERSION 1.0)
-project(tcpServer VERSION 1.0)
+project(tlsServer VERSION 1.0 DESCRIPTION "Listener for TLS")
+project(tcpServer VERSION 1.0 DESCRIPTION "Listener for TCP")
 
 # Build type is Release
 set(CMAKE_BUILD_TYPE Release)
@@ -33,5 +33,5 @@ set_target_properties(tcpServer PROPERTIES
 
 # Install rule (copy to install directory)
 install(TARGETS tlsServer tcpServer
-    LIBRARY DESTINATION lib/NetworkListener
+    LIBRARY DESTINATION lib
     PUBLIC_HEADER DESTINATION include/NetworkListener)

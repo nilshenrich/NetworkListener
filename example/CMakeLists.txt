@@ -6,29 +6,23 @@ cmake_minimum_required(VERSION 3.10)
 # Project name
 project(example VERSION 1.0)
 
-# Compile example and all cpp files in src directory
-file(GLOB sourcefiles
-    "../src/*.cpp"
-    "main.cpp"
-    )
-
 # The deault build type is Release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Source files to be compiled
-add_executable(example ${sourcefiles})
+add_executable(example "main.cpp")
 
 # Set include path to search for headers
-include_directories(../include)
+include_directories(../include /usr/local/include)
 
 # Set compiler and linker flags
 target_compile_options(example PRIVATE -fexceptions
     $<$<CONFIG:DEBUG>: -DDEVELOP -Wall -g -Og>
     $<$<CONFIG:RELEASE>: -O3>)
 target_link_options(example PRIVATE $<$<CONFIG:RELEASE>: -s>)
-target_link_libraries(example -lcrypto -lcrypt -lssl -pthread)
+target_link_libraries(example -lcrypto -lcrypt -lssl -pthread -ltcpServer -ltlsServer)
 
 # Use C++17 standard
 set_target_properties(example PROPERTIES

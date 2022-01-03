@@ -340,7 +340,7 @@ namespace networking
 
         // Start the thread to accept new connections
         if (accHandler.joinable())
-            throw networking_error("Start listener thread failed: Thread is already running");
+            throw networking_error("Start listener thread failed: Thread is already running"s);
         accHandler = thread{&NetworkListener::listenerAccept, this};
 
         return initCode;

@@ -12,8 +12,8 @@
 #include <iostream>
 #include <chrono>
 
-#include "TcpServer.h"
-#include "TlsServer.h"
+#include "NetworkListener/TcpServer.h"
+#include "NetworkListener/TlsServer.h"
 
 using namespace std;
 using namespace networking;
