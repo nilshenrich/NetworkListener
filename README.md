@@ -1,6 +1,6 @@
 # NetworkListener
 
-## *(A compatible client librarie is coming soon)*
+## *(A compatible client library is coming soon)*
 
 This project contains installable C++ libraries for a server (listener) on TCP level. A client can establish a connection to the server and data can be sent in both directions. The number of connected clients at one time is limited to 4096.
 
