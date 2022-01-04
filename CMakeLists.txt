@@ -36,6 +36,7 @@ set_target_properties(tcpServer PROPERTIES
     CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Install rule (copy to install directory)
+include(GNUInstallDirs)
 install(TARGETS tlsServer tcpServer
-    LIBRARY DESTINATION lib
-    PUBLIC_HEADER DESTINATION include/NetworkListener)
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/NetworkListener")
