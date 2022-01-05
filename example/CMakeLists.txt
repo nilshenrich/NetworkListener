@@ -1,5 +1,8 @@
 # For debugging please use the command "cmake -DCMAKE_BUILD_TYPE=Debug .."
 
+# Include standard directories
+include(GNUInstallDirs)
+
 # Minimum required version of CMake
 cmake_minimum_required(VERSION 3.10)
 
@@ -15,14 +18,14 @@ endif()
 add_executable(example "main.cpp")
 
 # Set include path to search for headers
-include_directories(../include /usr/local/include)
+include_directories(../include ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Set compiler and linker flags
 target_compile_options(example PRIVATE -fexceptions
     $<$<CONFIG:DEBUG>: -DDEVELOP -Wall -g -Og>
     $<$<CONFIG:RELEASE>: -O3>)
 target_link_options(example PRIVATE $<$<CONFIG:RELEASE>: -s>)
-target_link_libraries(example -lcrypto -lcrypt -lssl -pthread -ltcpServer -ltlsServer)
+target_link_libraries(example -lcrypto -lcrypt -lssl -pthread -lnetworkListenerTcp -lnetworkListenerTls)
 
 # Use C++17 standard
 set_target_properties(example PROPERTIES
