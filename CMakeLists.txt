@@ -1,14 +1,14 @@
 # Create library for this package
 
-# Include standard directories
-include(GNUInstallDirs)
-
 # Minimum requried version of CMake
 cmake_minimum_required(VERSION 3.10)
 
 # Project name
 project(networkListenerTls VERSION 1.0 DESCRIPTION "Listener for TLS")
 project(networkListenerTcp VERSION 1.0 DESCRIPTION "Listener for TCP")
+
+# Include standard directories
+include(GNUInstallDirs)
 
 # Build type is Release
 set(CMAKE_BUILD_TYPE Release)

@@ -1,13 +1,13 @@
 # For debugging please use the command "cmake -DCMAKE_BUILD_TYPE=Debug .."
 
-# Include standard directories
-include(GNUInstallDirs)
-
 # Minimum required version of CMake
 cmake_minimum_required(VERSION 3.10)
 
 # Project name
 project(example VERSION 1.0)
+
+# Include standard directories
+include(GNUInstallDirs)
 
 # The deault build type is Release
 if(NOT CMAKE_BUILD_TYPE)
