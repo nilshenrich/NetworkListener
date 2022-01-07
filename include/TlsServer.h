@@ -19,7 +19,7 @@
 namespace networking
 {
    // Deleter for SSL objects
-   struct SSL_Deleter
+   struct NetworkListener_SSL_Deleter
    {
       void operator()(SSL *ssl)
       {
@@ -28,7 +28,7 @@ namespace networking
       }
    };
 
-   class TlsServer : public NetworkListener<SSL, SSL_Deleter>
+   class TlsServer : public NetworkListener<SSL, NetworkListener_SSL_Deleter>
    {
    public:
       TlsServer();
