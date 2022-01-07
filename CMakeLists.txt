@@ -1,3 +1,5 @@
+# For debugging please use the command "cmake -DCMAKE_BUILD_TYPE=Debug .."
+
 # Create library for this package
 
 # Minimum requried version of CMake

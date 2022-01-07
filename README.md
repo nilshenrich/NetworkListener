@@ -39,7 +39,7 @@ As already mentioned in [General explanation](#general-explanation), this projec
     cmake ..
     make
     ```
-    *To get information printed on the screen, the package can be built in debug mode (Not recommended when installing libraries) by setting the define: __cmake&#160;&#x2011;DCMAKE_BUILD_TYPE=Debug&#160;..__*
+    *To get information printed on the screen, the package can be built in debug mode (Not recommended when installing libraries) by setting the define: __cmake&#160;&#x2011;DCMAKE_BUILD_TYPE=Debug&#160;..__ (Same when compiling example)*
 
 1. To install the created libraries and header files to your system, run
     ```console
