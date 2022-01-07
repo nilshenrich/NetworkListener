@@ -62,6 +62,13 @@ Now the package is reade to use. Please see the example for how to use it.
 This repository contains a small example to show the usage of this package. It creates to listeners, one using unseure TCP, the other using unecrypted and two-way-authenticated TLS (two-way authentication means, the server authenticates itself with a CA-signed certificate ad forces the client to also authenticate itself with his own CA-signed certificate).\
 The example program runs for 10 seconds. Within this time range, it can accept new client connections and receive data. Received data will be printed on the screen and sent back to the sending client.
 
+## Create certificates
+
+Before the encrypted TLS listener can run properly, the needed certificates and private keys need to be created. To do this, just run the bash file
+```console
+example/CMakeLists.txt
+```
+
 ## Run example
 
 The example can be compiled the same way as the libraries (Without installing at the end):

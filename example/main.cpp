@@ -27,15 +27,13 @@ public:
     virtual ~ExampleServer() {}
 
     // Start TCP and TLS server
-    void start()
+    int start()
     {
         // Start TCP server
         TcpServer::start(8081);
 
         // Start TLS server
-        TlsServer::start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
-
-        return;
+        return TlsServer::start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
     }
 
     // Stop TCP and TLS server
@@ -85,13 +83,22 @@ int main()
     ExampleServer server;
 
     // Start server
-    server.start();
+    int start{server.start()};
+    if (start)
+    {
+        cerr << "Error when starting server: " << start << endl;
+        return start;
+    }
+
+    cout << "Server started." << endl;
 
     // Wait for 10 seconds
     this_thread::sleep_for(10s);
 
     // Stop server
     server.stop();
+
+    cout << "Server stopped." << endl;
 
     return 0;
 }
