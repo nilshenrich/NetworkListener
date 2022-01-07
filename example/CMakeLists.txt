@@ -25,7 +25,7 @@ target_compile_options(example PRIVATE -fexceptions
     $<$<CONFIG:DEBUG>: -DDEVELOP -Wall -g -Og>
     $<$<CONFIG:RELEASE>: -O3>)
 target_link_options(example PRIVATE $<$<CONFIG:RELEASE>: -s>)
-target_link_libraries(example -lcrypto -lcrypt -lssl -pthread -lnetworkListenerTcp -lnetworkListenerTls)
+target_link_libraries(example -lnetworkListenerTcp -lnetworkListenerTls -lcrypto -lcrypt -lssl -pthread)
 
 # Use C++17 standard
 set_target_properties(example PROPERTIES
