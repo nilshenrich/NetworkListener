@@ -35,11 +35,11 @@ namespace networking
     /**
      * @brief Expeption class for the NetworkListener class.
      */
-    class networking_error : public std::exception
+    class NetworkListener_error : public std::exception
     {
     public:
-        networking_error(std::string msg = "unexpected networking error") : msg{msg} {}
-        virtual ~networking_error() {}
+        NetworkListener_error(std::string msg = "unexpected networking error") : msg{msg} {}
+        virtual ~NetworkListener_error() {}
 
         const char *what()
         {
@@ -50,11 +50,11 @@ namespace networking
         std::string msg;
 
         // Delete default constructor
-        networking_error() = delete;
+        NetworkListener_error() = delete;
 
         // Disallow copy
-        networking_error(const networking_error &) = delete;
-        networking_error &operator=(const networking_error &) = delete;
+        NetworkListener_error(const NetworkListener_error &) = delete;
+        NetworkListener_error &operator=(const NetworkListener_error &) = delete;
     };
 
     /**
@@ -340,7 +340,7 @@ namespace networking
 
         // Start the thread to accept new connections
         if (accHandler.joinable())
-            throw networking_error("Start listener thread failed: Thread is already running"s);
+            throw NetworkListener_error("Start listener thread failed: Thread is already running"s);
         accHandler = thread{&NetworkListener::listenerAccept, this};
 
         return initCode;
