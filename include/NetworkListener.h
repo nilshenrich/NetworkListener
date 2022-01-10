@@ -435,7 +435,7 @@ namespace networking
                 shutdown(it.first, SHUT_RDWR);
 
 #ifdef DEVELOP
-                cout << typeid(this).name() << "::" << __func__ << ": Closed connection to cliet " << it.first << endl;
+                cout << typeid(this).name() << "::" << __func__ << ": Closed connection to client " << it.first << endl;
 #endif // DEVELOP
             }
         }
