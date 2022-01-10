@@ -335,13 +335,13 @@ namespace networking
             return NETWORKLISTENER_ERROR_START_LISTENER;
         }
 
-        // Listener is now running
-        running = true;
-
         // Start the thread to accept new connections
         if (accHandler.joinable())
             throw NetworkListener_error("Start listener thread failed: Thread is already running"s);
         accHandler = thread{&NetworkListener::listenerAccept, this};
+
+        // Listener is now running
+        running = true;
 
         return initCode;
     }
