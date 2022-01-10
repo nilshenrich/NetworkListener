@@ -355,12 +355,15 @@ namespace networking
         running = false;
 
         // Block listening TCP socket to abort all reads
-        if (shutdown(tcpSocket, SHUT_RDWR))
-            return;
+        int shut{shutdown(tcpSocket, SHUT_RDWR)};
 
         // Wait for the accept thread to finish
         if (accHandler.joinable())
             accHandler.join();
+
+        // If shutdown failed, abort stop here
+        if (shut)
+            return;
 
         // Close listening TCP socket
         close(tcpSocket);
