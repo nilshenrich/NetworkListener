@@ -197,6 +197,9 @@ namespace networking
         // Mutex to protect the activeConnections map
         std::mutex activeConnections_m{};
 
+        // Flag to indicate if the listener is running
+        bool running{false};
+
         // Maximum TCP packet size
         const static int MAXIMUM_RECEIVE_PACKAGE_SIZE{16384};
 
@@ -214,9 +217,6 @@ namespace networking
          * @param clientId 
          */
         void listenerReceive(const int clientId);
-
-        // Flag to indicate if the listener is running
-        bool running{false};
 
         // Socket address for the listener
         struct sockaddr_in socketAddress
