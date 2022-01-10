@@ -380,7 +380,15 @@ namespace networking
         using namespace std;
 
         // Extend message with start and end characters and send it
-        return writeMsg(clientId, string{NETWORKLISTENER_CHAR_TRANSFER_START} + msg + string{NETWORKLISTENER_CHAR_TRANSFER_END});
+        lock_guard<mutex> lck{activeConnections_m};
+        if (activeConnections.find(clientId) != activeConnections.end())
+            return writeMsg(clientId, string{NETWORKLISTENER_CHAR_TRANSFER_START} + msg + string{NETWORKLISTENER_CHAR_TRANSFER_END});
+
+#ifdef DEVELOP
+        cerr << typeid(this).name() << "::" << __func__ << ": Client " << clientId << " is not connected" << endl;
+#endif // DEVELOP
+
+        return false;
     }
 
     template <class SocketType, class SocketDeleter>

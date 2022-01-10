@@ -167,19 +167,6 @@ bool TlsServer::writeMsg(const int clientId, const std::string &msg)
     // Get length of message to send
     const int lenMsg{(int)msg.size()};
 
-    lock_guard<mutex> lck{activeConnections_m};
-
-    // Check if client is still active
-    // Return false if it is not
-    if (activeConnections.end() == activeConnections.find(clientId))
-    {
-#ifdef DEVELOP
-        cerr << typeid(this).name() << "::" << __func__ << ": Client " << clientId << " not connected" << endl;
-#endif // DEVELOP
-
-        return false;
-    }
-
 #ifdef DEVELOP
     cout << typeid(this).name() << "::" << __func__ << ": Send to client " << clientId << ": " << msg << endl;
 #endif // DEVELOP
