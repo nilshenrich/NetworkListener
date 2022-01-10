@@ -30,10 +30,13 @@ public:
     int start()
     {
         // Start TCP server
-        TcpServer::start(8081);
+        int start_tcp{TcpServer::start(8081)};
 
         // Start TLS server
-        return TlsServer::start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
+        int start_tls{TlsServer::start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem")};
+
+        // Return code (2 bytes): High byte: TLS, low byte: TCP
+        return (start_tls << 8) | start_tcp;
     }
 
     // Stop TCP and TLS server
