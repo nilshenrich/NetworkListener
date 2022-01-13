@@ -53,16 +53,16 @@ public:
 
 private:
     // Override abstract methods
-    void workOnMessage_TcpServer(const int tlsClientId, const std::string tcpMsgFromClient)
+    void workOnMessage_TcpServer(const int tcpClientId, const std::string tcpMsgFromClient)
     {
-        cout << "Message from TCP client " << tlsClientId << ": " << tcpMsgFromClient << endl;
-        TcpServer::sendMsg(tlsClientId, "Send back: " + tcpMsgFromClient);
+        cout << "Message from TCP client " << tcpClientId << ": " << tcpMsgFromClient << endl;
+        TcpServer::sendMsg(tcpClientId, "Send back: " + tcpMsgFromClient);
         return;
     }
 
-    void workOnClosed_TcpServer(const int tlsClientId)
+    void workOnClosed_TcpServer(const int tcpClientId)
     {
-        cout << "TCP Client " << tlsClientId << " closed connection." << endl;
+        cout << "TCP Client " << tcpClientId << " closed connection." << endl;
         return;
     }
 

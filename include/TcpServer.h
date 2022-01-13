@@ -26,18 +26,18 @@ namespace networking
        * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
        * This method must be implemented in derived classes.
        * 
-       * @param tlsClientId 
-       * @param tlsMsgFromClient 
+       * @param tcpClientId 
+       * @param tcpMsgFromClient 
        */
-      virtual void workOnMessage_TcpServer(const int tlsClientId, const std::string tlsMsgFromClient) = 0;
+      virtual void workOnMessage_TcpServer(const int tcpClientId, const std::string tcpMsgFromClient) = 0;
 
       /**
        * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
        * This method must be implemented in derived classes.
        * 
-       * @param tlsClientId 
+       * @param tcpClientId 
        */
-      virtual void workOnClosed_TcpServer(const int tlsClientId) = 0;
+      virtual void workOnClosed_TcpServer(const int tcpClientId) = 0;
 
    private:
       /**
