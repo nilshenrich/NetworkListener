@@ -22,7 +22,9 @@ namespace networking
         NETWORKLISTENER_ERROR_START_WRONG_CA_PATH = 30,   // Listener could not start because of wrong path to CA cert file
         NETWORKLISTENER_ERROR_START_WRONG_CERT_PATH = 31, // Listener could not start because of wrong path to certificate file
         NETWORKLISTENER_ERROR_START_WRONG_KEY_PATH = 32,  // Listener could not start because of wrong path to key file
-        NETWORKLISTENER_ERROR_START_WRONG_KEY = 33,       // Listener could not start because of non matching key and certificate
+        NETWORKLISTENER_ERROR_START_WRONG_CA = 33,        // Listener could not start because of bad CA cert file
+        NETWORKLISTENER_ERROR_START_WRONG_CERT = 34,      // Listener could not start because of bad certificate file
+        NETWORKLISTENER_ERROR_START_WRONG_KEY = 35,       // Listener could not start because of bad key file or non matching key with certificate
         NETWORKLISTENER_ERROR_START_CREATE_SOCKET = 40,   // Listener could not start because of TCP socket creation error
         NETWORKLISTENER_ERROR_START_SET_SOCKET_OPT = 41,  // Listener could not start because of TCP socket option error
         NETWORKLISTENER_ERROR_START_BIND_PORT = 42,       // Listener could not start because of TCP socket bind error
