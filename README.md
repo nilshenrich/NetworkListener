@@ -204,6 +204,12 @@ But there are some further methods worth knowing about.
     ```
     will return "Stuttgart" if this is the client's city name.
 
+1. isRunning():
+
+    The **isRunning**-method returns the running flag of the NetworkListener.\
+    **True** means: *The listener is running*\
+    **False** means: *The listener is not running*
+
 # Example
 
 This repository contains a small example to show the usage of this package. It creates two listeners, one using unsecure TCP, the other using ecrypted and two-way-authenticated TLS (two-way authentication means, the server authenticates itself with a CA-signed certificate ad forces the client to also authenticate itself with his own CA-signed certificate).\

@@ -23,7 +23,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_SET_CONTEXT;
     }
 
@@ -35,7 +34,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_WRONG_CA_PATH;
     }
 
@@ -47,7 +45,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_WRONG_CERT_PATH;
     }
 
@@ -59,7 +56,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_WRONG_KEY_PATH;
     }
 
@@ -72,7 +68,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_WRONG_CA;
     }
 
@@ -88,7 +83,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_WRONG_CERT;
     }
 
@@ -101,7 +95,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_WRONG_KEY;
     }
 
@@ -216,7 +209,7 @@ string TlsServer::readMsg(SSL *socket)
 
 void TlsServer::connectionDeinit(SSL *socket)
 {
-    if (running)
+    if (isRunning())
         SSL_shutdown(socket);
     return;
 }

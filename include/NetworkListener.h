@@ -113,6 +113,13 @@ namespace networking
          */
         std::string getClientIp(const int clientId);
 
+        /**
+         * @brief Return if listener is running
+         * 
+         * @return bool (true if running, false if not)
+         */
+        bool isRunning() const;
+
     protected:
         /**
          * @brief Initializes the listener just before starting it.
@@ -197,9 +204,6 @@ namespace networking
         // Mutex to protect the activeConnections map
         std::mutex activeConnections_m{};
 
-        // Flag to indicate if the listener is running
-        bool running{false};
-
         // Maximum TCP packet size
         const static int MAXIMUM_RECEIVE_PACKAGE_SIZE{16384};
 
@@ -228,6 +232,9 @@ namespace networking
 
         // Thread to accept new connections
         std::thread accHandler{};
+
+        // Flag to indicate if the listener is running
+        bool running{false};
 
         // Disallow copy
         NetworkListener(const NetworkListener &) = delete;
@@ -537,6 +544,12 @@ namespace networking
                 }
             }
         }
+    }
+
+    template <class SocketType, class SocketDeleter>
+    bool NetworkListener<SocketType, SocketDeleter>::isRunning() const
+    {
+        return running;
     }
 }
 
