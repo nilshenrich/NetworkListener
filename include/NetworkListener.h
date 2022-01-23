@@ -69,10 +69,7 @@ namespace networking
     {
     public:
         NetworkListener() {}
-        virtual ~NetworkListener()
-        {
-            stop();
-        }
+        virtual ~NetworkListener() {}
 
         /**
          * @brief Starts the listener.
