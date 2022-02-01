@@ -449,8 +449,6 @@ namespace networking
             // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
             lock_guard<mutex> lck{recHandlers_m};
             thread rec_t{&NetworkListener::listenerReceive, this, newConnection};
-            recHandlers[newConnection] = move(rec_t);
-            recHandlersRunning[newConnection] = true;
 
             // Get all finished receive handlers
             vector<int> toRemove;
@@ -467,6 +465,10 @@ namespace networking
                 recHandlers.erase(id);
                 recHandlersRunning.erase(id);
             }
+
+            // Add new receive handler
+            recHandlers[newConnection] = move(rec_t);
+            recHandlersRunning[newConnection] = true;
         }
 
         // Close all active connections
