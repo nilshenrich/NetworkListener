@@ -486,10 +486,7 @@ namespace networking
 
         // Wait for all receive processes to finish
         for (auto &it : recHandlers)
-        {
             it.second.join();
-        }
-        recHandlers.clear();
 
         return;
     }
@@ -510,11 +507,18 @@ namespace networking
             return;
         }
 
-        // Add connection to activ connections
+        // Add connection to active connections
         {
             lock_guard<mutex> lck{activeConnections_m};
             activeConnections[clientId] = unique_ptr<SocketType, SocketDeleter>{connection_p};
         }
+
+        // Vectors of running work handlers and their status flags
+        vector<thread> workHandlers;
+        vector<unique_ptr<bool>> workHandlersRunning;
+
+        // Mutex to protect the work handler vectors
+        mutex workHandlers_m;
 
         // Read incoming messages from this connection as long as the connection is active
         string buffer;
@@ -548,6 +552,10 @@ namespace networking
                 // Close the connection
                 close(clientId);
 
+                // Wait for all work handlers to finish
+                for (auto &it : workHandlers)
+                    it.join();
+
                 // Set running flag to false and exit the thread
                 lock_guard<mutex> lck{recHandlers_m};
                 recHandlersRunning[clientId] = false;
@@ -571,10 +579,41 @@ namespace networking
 #ifdef DEVELOP
                     cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
 #endif // DEVELOP
-                    thread{&NetworkListener::workOnMessage, this, clientId, move(buffer)}.detach();
+                    {
+                        lock_guard<mutex> lck{workHandlers_m};
+                        unique_ptr<bool> workRunning{new bool{true}};
+                        thread work_t{[this, clientId, &buffer, &workHandlers_m](bool *workRunning_p)
+                                      {
+                                          workOnMessage(clientId, move(buffer));
+
+                                          // Set running flag to false and exit the thread
+                                          lock_guard<mutex> lck{workHandlers_m};
+                                          *workRunning_p = false;
+
+                                          return;
+                                      },
+                                      workRunning.get()};
+
+                        // Remove all funished work handlers from the vector
+                        size_t workHandlers_s{workHandlersRunning.size()};
+                        for (size_t i{0}; i < workHandlers_s; i += 1)
+                        {
+                            if (!*workHandlersRunning[i].get())
+                            {
+                                workHandlers[i].join();
+                                workHandlers.erase(workHandlers.begin() + i);
+                                workHandlersRunning.erase(workHandlersRunning.begin() + i);
+                                i -= 1;
+                                workHandlers_s -= 1;
+                            }
+                        }
+
+                        workHandlers.push_back(move(work_t));
+                        workHandlersRunning.push_back(move(workRunning));
+                    }
                     break;
 
-                // Midder of message -> store character in buffer
+                // Middle of message -> store character in buffer
                 default:
                     buffer.push_back(c);
                     break;
