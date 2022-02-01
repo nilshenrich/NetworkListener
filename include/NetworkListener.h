@@ -19,6 +19,7 @@
 #endif // DEVELOP
 
 #include <string>
+#include <vector>
 #include <map>
 #include <thread>
 #include <mutex>
@@ -230,6 +231,13 @@ namespace networking
         // Thread to accept new connections
         std::thread accHandler{};
 
+        // All receiving threads (One per connected client) and their running status
+        std::map<int, std::thread> recHandlers{};
+        std::map<int, bool> recHandlersRunning{};
+
+        // Mutex to protect the recHandlersRunning map (recHandlers map doesn't need to be protected because it is only accessed from the accept thread)
+        std::mutex recHandlers_m{};
+
         // Flag to indicate if the listener is running
         bool running{false};
 
@@ -439,7 +447,26 @@ namespace networking
 #endif // DEVELOP
 
             // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
-            thread{&NetworkListener::listenerReceive, this, newConnection}.detach();
+            lock_guard<mutex> lck{recHandlers_m};
+            thread rec_t{&NetworkListener::listenerReceive, this, newConnection};
+            recHandlers[newConnection] = move(rec_t);
+            recHandlersRunning[newConnection] = true;
+
+            // Get all finished receive handlers
+            vector<int> toRemove;
+            for (auto &flag : recHandlersRunning)
+            {
+                if (!flag.second)
+                    toRemove.push_back(flag.first);
+            }
+
+            // Remove finished receive handlers
+            for (auto &id : toRemove)
+            {
+                recHandlers[id].join();
+                recHandlers.erase(id);
+                recHandlersRunning.erase(id);
+            }
         }
 
         // Close all active connections
@@ -456,9 +483,11 @@ namespace networking
         }
 
         // Wait for all receive processes to finish
-        // Until the map of active connections is empty
-        while (!activeConnections.empty())
-            this_thread::sleep_for(100ms);
+        for (auto &it : recHandlers)
+        {
+            it.second.join();
+        }
+        recHandlers.clear();
 
         return;
     }
@@ -471,7 +500,13 @@ namespace networking
         // Initialize the (so far uncrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
         if (!connection_p)
+        {
+            // Set running flag to false and exit the thread
+            lock_guard<mutex> lck{recHandlers_m};
+            recHandlersRunning[clientId] = false;
+
             return;
+        }
 
         // Add connection to activ connections
         {
@@ -511,7 +546,10 @@ namespace networking
                 // Close the connection
                 close(clientId);
 
-                // End receiving process of this connection
+                // Set running flag to false and exit the thread
+                lock_guard<mutex> lck{recHandlers_m};
+                recHandlersRunning[clientId] = false;
+
                 return;
             }
 
