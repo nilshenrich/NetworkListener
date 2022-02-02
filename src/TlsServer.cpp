@@ -5,7 +5,10 @@ using namespace std;
 
 TlsServer::TlsServer() {}
 
-TlsServer::~TlsServer() {}
+TlsServer::~TlsServer()
+{
+    stop();
+}
 
 int TlsServer::init(const char *const pathToCaCert,
                     const char *const pathToCert,

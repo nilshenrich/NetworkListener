@@ -613,7 +613,7 @@ namespace networking
                                       },
                                       workRunning.get()};
 
-                        // Remove all funished work handlers from the vector
+                        // Remove all finished work handlers from the vector
                         lock_guard<mutex> lck{workHandlers_m};
                         size_t workHandlers_s{workHandlersRunning.size()};
                         for (size_t i{0}; i < workHandlers_s; i += 1)
