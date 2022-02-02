@@ -59,6 +59,33 @@ namespace networking
     };
 
     /**
+     * @brief Class to manage running flag in threds.
+     * 
+     */
+    class NetworkListener_running_manager
+    {
+    public:
+        NetworkListener_running_manager(bool &flag) : flag{flag}
+        {
+            flag = true;
+        }
+        virtual ~NetworkListener_running_manager()
+        {
+            flag = false;
+        }
+
+    private:
+        bool &flag;
+
+        // Delete default constructor
+        NetworkListener_running_manager() = delete;
+
+        // Disallow copy
+        NetworkListener_running_manager(const NetworkListener_running_manager &) = delete;
+        NetworkListener_running_manager &operator=(const NetworkListener_running_manager &) = delete;
+    };
+
+    /**
      * @brief Template class for the NetworkListener class.
      * A usable server class must be derived from this class with specific socket type (int for unencrypted TCP, SSL for TLS).
      * 
@@ -496,16 +523,13 @@ namespace networking
     {
         using namespace std;
 
+        // Mark Thread as running
+        NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
+
         // Initialize the (so far uncrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
         if (!connection_p)
-        {
-            // Set running flag to false and exit the thread
-            lock_guard<mutex> lck{recHandlers_m};
-            recHandlersRunning[clientId] = false;
-
             return;
-        }
 
         // Add connection to active connections
         {
@@ -556,10 +580,6 @@ namespace networking
                 for (auto &it : workHandlers)
                     it.join();
 
-                // Set running flag to false and exit the thread
-                lock_guard<mutex> lck{recHandlers_m};
-                recHandlersRunning[clientId] = false;
-
                 return;
             }
 
@@ -580,21 +600,21 @@ namespace networking
                     cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
 #endif // DEVELOP
                     {
-                        lock_guard<mutex> lck{workHandlers_m};
                         unique_ptr<bool> workRunning{new bool{true}};
-                        thread work_t{[this, clientId, &buffer, &workHandlers_m](bool *workRunning_p)
+                        thread work_t{[this, clientId, &buffer](bool *workRunning_p)
                                       {
-                                          workOnMessage(clientId, move(buffer));
+                                          // Mark Thread as running
+                                          NetworkListener_running_manager running_mgr{*workRunning_p};
 
-                                          // Set running flag to false and exit the thread
-                                          lock_guard<mutex> lck{workHandlers_m};
-                                          *workRunning_p = false;
+                                          // Run code to handle the incoming message
+                                          workOnMessage(clientId, move(buffer));
 
                                           return;
                                       },
                                       workRunning.get()};
 
                         // Remove all funished work handlers from the vector
+                        lock_guard<mutex> lck{workHandlers_m};
                         size_t workHandlers_s{workHandlersRunning.size()};
                         for (size_t i{0}; i < workHandlers_s; i += 1)
                         {
