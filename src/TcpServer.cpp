@@ -3,7 +3,7 @@
 using namespace networking;
 using namespace std;
 
-TcpServer::TcpServer() {}
+TcpServer::TcpServer(char delimiter) : NetworkListener{delimiter} {}
 
 TcpServer::~TcpServer()
 {

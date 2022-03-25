@@ -3,7 +3,7 @@
 using namespace networking;
 using namespace std;
 
-TlsServer::TlsServer() {}
+TlsServer::TlsServer(char delimiter) : NetworkListener{delimiter} {}
 
 TlsServer::~TlsServer()
 {

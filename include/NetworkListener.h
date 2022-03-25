@@ -96,7 +96,7 @@ namespace networking
     class NetworkListener
     {
     public:
-        NetworkListener(char delimiter = '\n') : DELIMITER{delimiter} {}
+        NetworkListener(char delimiter) : DELIMITER{delimiter} {}
         virtual ~NetworkListener() {}
 
         /**
@@ -272,6 +272,7 @@ namespace networking
         const char DELIMITER;
 
         // Disallow copy
+        NetworkListener() = delete;
         NetworkListener(const NetworkListener &) = delete;
         NetworkListener &operator=(const NetworkListener &) = delete;
     };
@@ -420,6 +421,16 @@ namespace networking
     bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, const std::string &msg)
     {
         using namespace std;
+
+        // Check if message doesn't contain delimiter
+        if (msg.find(DELIMITER) != string::npos)
+        {
+#ifdef DEVELOP
+            cerr << typeid(this).name() << "::" << __func__ << ": Message contains delimiter" << endl;
+#endif // DEVELOP
+
+            return false;
+        }
 
         // Extend message with start and end characters and send it
         lock_guard<mutex> lck{activeConnections_m};
