@@ -5,7 +5,10 @@ using namespace std;
 
 TcpServer::TcpServer() {}
 
-TcpServer::~TcpServer() {}
+TcpServer::~TcpServer()
+{
+    stop();
+}
 
 int TcpServer::init(const char *const,
                     const char *const,

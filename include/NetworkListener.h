@@ -19,6 +19,7 @@
 #endif // DEVELOP
 
 #include <string>
+#include <vector>
 #include <map>
 #include <thread>
 #include <mutex>
@@ -58,6 +59,33 @@ namespace networking
     };
 
     /**
+     * @brief Class to manage running flag in threds.
+     * 
+     */
+    class NetworkListener_running_manager
+    {
+    public:
+        NetworkListener_running_manager(bool &flag) : flag{flag}
+        {
+            flag = true;
+        }
+        virtual ~NetworkListener_running_manager()
+        {
+            flag = false;
+        }
+
+    private:
+        bool &flag;
+
+        // Delete default constructor
+        NetworkListener_running_manager() = delete;
+
+        // Disallow copy
+        NetworkListener_running_manager(const NetworkListener_running_manager &) = delete;
+        NetworkListener_running_manager &operator=(const NetworkListener_running_manager &) = delete;
+    };
+
+    /**
      * @brief Template class for the NetworkListener class.
      * A usable server class must be derived from this class with specific socket type (int for unencrypted TCP, SSL for TLS).
      * 
@@ -69,10 +97,7 @@ namespace networking
     {
     public:
         NetworkListener() {}
-        virtual ~NetworkListener()
-        {
-            stop();
-        }
+        virtual ~NetworkListener() {}
 
         /**
          * @brief Starts the listener.
@@ -112,6 +137,13 @@ namespace networking
          * @return std::string 
          */
         std::string getClientIp(const int clientId);
+
+        /**
+         * @brief Return if listener is running
+         * 
+         * @return bool (true if running, false if not)
+         */
+        bool isRunning() const;
 
     protected:
         /**
@@ -197,9 +229,6 @@ namespace networking
         // Mutex to protect the activeConnections map
         std::mutex activeConnections_m{};
 
-        // Flag to indicate if the listener is running
-        bool running{false};
-
         // Maximum TCP packet size
         const static int MAXIMUM_RECEIVE_PACKAGE_SIZE{16384};
 
@@ -228,6 +257,16 @@ namespace networking
 
         // Thread to accept new connections
         std::thread accHandler{};
+
+        // All receiving threads (One per connected client) and their running status
+        std::map<int, std::thread> recHandlers{};
+        std::map<int, bool> recHandlersRunning{};
+
+        // Mutex to protect the recHandlersRunning map (recHandlers map doesn't need to be protected because it is only accessed from the accept thread)
+        std::mutex recHandlers_m{};
+
+        // Flag to indicate if the listener is running
+        bool running{false};
 
         // Disallow copy
         NetworkListener(const NetworkListener &) = delete;
@@ -435,7 +474,28 @@ namespace networking
 #endif // DEVELOP
 
             // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
-            thread{&NetworkListener::listenerReceive, this, newConnection}.detach();
+            lock_guard<mutex> lck{recHandlers_m};
+            thread rec_t{&NetworkListener::listenerReceive, this, newConnection};
+
+            // Get all finished receive handlers
+            vector<int> toRemove;
+            for (auto &flag : recHandlersRunning)
+            {
+                if (!flag.second)
+                    toRemove.push_back(flag.first);
+            }
+
+            // Remove finished receive handlers
+            for (auto &id : toRemove)
+            {
+                recHandlers[id].join();
+                recHandlers.erase(id);
+                recHandlersRunning.erase(id);
+            }
+
+            // Add new receive handler
+            recHandlers[newConnection] = move(rec_t);
+            recHandlersRunning[newConnection] = true;
         }
 
         // Close all active connections
@@ -452,9 +512,8 @@ namespace networking
         }
 
         // Wait for all receive processes to finish
-        // Until the map of active connections is empty
-        while (!activeConnections.empty())
-            this_thread::sleep_for(100ms);
+        for (auto &it : recHandlers)
+            it.second.join();
 
         return;
     }
@@ -464,16 +523,26 @@ namespace networking
     {
         using namespace std;
 
+        // Mark Thread as running
+        NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
+
         // Initialize the (so far uncrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
         if (!connection_p)
             return;
 
-        // Add connection to activ connections
+        // Add connection to active connections
         {
             lock_guard<mutex> lck{activeConnections_m};
             activeConnections[clientId] = unique_ptr<SocketType, SocketDeleter>{connection_p};
         }
+
+        // Vectors of running work handlers and their status flags
+        vector<thread> workHandlers;
+        vector<unique_ptr<bool>> workHandlersRunning;
+
+        // Mutex to protect the work handler vectors
+        mutex workHandlers_m;
 
         // Read incoming messages from this connection as long as the connection is active
         string buffer;
@@ -507,7 +576,10 @@ namespace networking
                 // Close the connection
                 close(clientId);
 
-                // End receiving process of this connection
+                // Wait for all work handlers to finish
+                for (auto &it : workHandlers)
+                    it.join();
+
                 return;
             }
 
@@ -527,16 +599,53 @@ namespace networking
 #ifdef DEVELOP
                     cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
 #endif // DEVELOP
-                    thread{&NetworkListener::workOnMessage, this, clientId, move(buffer)}.detach();
+                    {
+                        unique_ptr<bool> workRunning{new bool{true}};
+                        thread work_t{[this, clientId, &buffer](bool *workRunning_p)
+                                      {
+                                          // Mark Thread as running
+                                          NetworkListener_running_manager running_mgr{*workRunning_p};
+
+                                          // Run code to handle the incoming message
+                                          workOnMessage(clientId, move(buffer));
+
+                                          return;
+                                      },
+                                      workRunning.get()};
+
+                        // Remove all finished work handlers from the vector
+                        lock_guard<mutex> lck{workHandlers_m};
+                        size_t workHandlers_s{workHandlersRunning.size()};
+                        for (size_t i{0}; i < workHandlers_s; i += 1)
+                        {
+                            if (!*workHandlersRunning[i].get())
+                            {
+                                workHandlers[i].join();
+                                workHandlers.erase(workHandlers.begin() + i);
+                                workHandlersRunning.erase(workHandlersRunning.begin() + i);
+                                i -= 1;
+                                workHandlers_s -= 1;
+                            }
+                        }
+
+                        workHandlers.push_back(move(work_t));
+                        workHandlersRunning.push_back(move(workRunning));
+                    }
                     break;
 
-                // Midder of message -> store character in buffer
+                // Middle of message -> store character in buffer
                 default:
                     buffer.push_back(c);
                     break;
                 }
             }
         }
+    }
+
+    template <class SocketType, class SocketDeleter>
+    bool NetworkListener<SocketType, SocketDeleter>::isRunning() const
+    {
+        return running;
     }
 }
 

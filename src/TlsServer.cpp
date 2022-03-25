@@ -5,7 +5,10 @@ using namespace std;
 
 TlsServer::TlsServer() {}
 
-TlsServer::~TlsServer() {}
+TlsServer::~TlsServer()
+{
+    stop();
+}
 
 int TlsServer::init(const char *const pathToCaCert,
                     const char *const pathToCert,
@@ -23,8 +26,40 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
         return NETWORKLISTENER_ERROR_START_SET_CONTEXT;
+    }
+
+    // Check if CA certificate file exists
+    if (access(pathToCaCert, F_OK))
+    {
+#ifdef DEVELOP
+        cerr << typeid(this).name() << "::" << __func__ << ": CA certificate file does not exist" << endl;
+#endif // DEVELOP
+
+        stop();
+        return NETWORKLISTENER_ERROR_START_WRONG_CA_PATH;
+    }
+
+    // Check if certificate file exists
+    if (access(pathToCert, F_OK))
+    {
+#ifdef DEVELOP
+        cerr << typeid(this).name() << "::" << __func__ << ": Server certificate file does not exist" << endl;
+#endif // DEVELOP
+
+        stop();
+        return NETWORKLISTENER_ERROR_START_WRONG_CERT_PATH;
+    }
+
+    // Check if private key file exists
+    if (access(pathToPrivKey, F_OK))
+    {
+#ifdef DEVELOP
+        cerr << typeid(this).name() << "::" << __func__ << ": Server private key file does not exist" << endl;
+#endif // DEVELOP
+
+        stop();
+        return NETWORKLISTENER_ERROR_START_WRONG_KEY_PATH;
     }
 
     // Load CA certificate
@@ -36,8 +71,7 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
-        return NETWORKLISTENER_ERROR_START_WRONG_CA_PATH;
+        return NETWORKLISTENER_ERROR_START_WRONG_CA;
     }
 
     // Set CA certificate as verification certificate to verify client certificate
@@ -52,11 +86,10 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
-        return NETWORKLISTENER_ERROR_START_WRONG_CERT_PATH;
+        return NETWORKLISTENER_ERROR_START_WRONG_CERT;
     }
 
-    // Load server private key
+    // Load server private key (Includes check with certificate)
     // Stop server and return error if it fails
     if (1 != SSL_CTX_use_PrivateKey_file(serverContext, pathToPrivKey, SSL_FILETYPE_PEM))
     {
@@ -65,20 +98,6 @@ int TlsServer::init(const char *const pathToCaCert,
 #endif // DEVELOP
 
         stop();
-
-        return NETWORKLISTENER_ERROR_START_WRONG_KEY_PATH;
-    }
-
-    // Check if the certificate and the private key match
-    // Stop server and return error if it fails
-    if (1 != SSL_CTX_check_private_key(serverContext))
-    {
-#ifdef DEVELOP
-        cerr << typeid(this).name() << "::" << __func__ << ": Server certificate and private key don't match" << endl;
-#endif // DEVELOP
-
-        stop();
-
         return NETWORKLISTENER_ERROR_START_WRONG_KEY;
     }
 
@@ -193,7 +212,7 @@ string TlsServer::readMsg(SSL *socket)
 
 void TlsServer::connectionDeinit(SSL *socket)
 {
-    if (running)
+    if (isRunning())
         SSL_shutdown(socket);
     return;
 }

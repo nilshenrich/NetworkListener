@@ -26,7 +26,7 @@ As the names say, **libnetworkListenerTcp** creates a simple TCP server with no 
 ## Specifications
 
 1. Maximum number of connected clients at the same time: **4096**
-1. Maximum message size:  **std::string::max_size() - 2** (2<sup>32</sup> - 2 (4294967294) for most)
+1. Maximum message size:  **std::string::max_size() - 2** (2<sup>32</sup> - 3 (4294967293) for most systems)
 
 # Installation
 
@@ -203,6 +203,12 @@ But there are some further methods worth knowing about.
     getSubjPartFromClientCert(4, nullptr, NID_localityName);
     ```
     will return "Stuttgart" if this is the client's city name.
+
+1. isRunning():
+
+    The **isRunning**-method returns the running flag of the NetworkListener.\
+    **True** means: *The listener is running*\
+    **False** means: *The listener is not running*
 
 # Example
 
