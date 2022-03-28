@@ -597,51 +597,55 @@ namespace networking
                 return;
             }
 
-            // The message is between STX and ETX in the stream
-            // Extract the message
-            for (char c : msg)
+            // Get raw message separated by delimiter
+            size_t delimiter_pos{msg.find(DELIMITER)};
+            if (string::npos == delimiter_pos)
             {
-                // End of message -> process the message (Buffer gets cleared by move)
-                if (DELIMITER == c)
-                {
+                // If delimiter is not found, the whole packet is part of the message
+                buffer += msg;
+            }
+            else
+            {
+                // If delimiter is found, the message is split into two parts
+                // TODO: Split packets with multiple delimiters
+                buffer += msg.substr(0, delimiter_pos);
+                msg = msg.substr(delimiter_pos + 1);
+
 #ifdef DEVELOP
-                    cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
+                cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
 #endif // DEVELOP
 
-                    unique_ptr<bool> workRunning{new bool{true}};
-                    thread work_t{[this, clientId](bool *workRunning_p, string buffer)
-                                  {
-                                      // Mark Thread as running
-                                      NetworkListener_running_manager running_mgr{*workRunning_p};
+                // Run code to handle the message
+                unique_ptr<bool> workRunning{new bool{true}};
+                thread work_t{[this, clientId](bool *workRunning_p, string buffer)
+                              {
+                                  // Mark Thread as running
+                                  NetworkListener_running_manager running_mgr{*workRunning_p};
 
-                                      // Run code to handle the incoming message
-                                      workOnMessage(clientId, move(buffer));
+                                  // Run code to handle the incoming message
+                                  workOnMessage(clientId, move(buffer));
 
-                                      return;
-                                  },
-                                  workRunning.get(), move(buffer)};
+                                  return;
+                              },
+                              workRunning.get(), move(buffer)};
 
-                    // Remove all finished work handlers from the vector
-                    lock_guard<mutex> lck{workHandlers_m};
-                    size_t workHandlers_s{workHandlersRunning.size()};
-                    for (size_t i{0}; i < workHandlers_s; i += 1)
+                // Remove all finished work handlers from the vector
+                lock_guard<mutex> lck{workHandlers_m};
+                size_t workHandlers_s{workHandlersRunning.size()};
+                for (size_t i{0}; i < workHandlers_s; i += 1)
+                {
+                    if (!*workHandlersRunning[i].get())
                     {
-                        if (!*workHandlersRunning[i].get())
-                        {
-                            workHandlers[i].join();
-                            workHandlers.erase(workHandlers.begin() + i);
-                            workHandlersRunning.erase(workHandlersRunning.begin() + i);
-                            i -= 1;
-                            workHandlers_s -= 1;
-                        }
+                        workHandlers[i].join();
+                        workHandlers.erase(workHandlers.begin() + i);
+                        workHandlersRunning.erase(workHandlersRunning.begin() + i);
+                        i -= 1;
+                        workHandlers_s -= 1;
                     }
-
-                    workHandlers.push_back(move(work_t));
-                    workHandlersRunning.push_back(move(workRunning));
                 }
-                // Middle of message -> store character in buffer
-                else
-                    buffer.push_back(c);
+
+                workHandlers.push_back(move(work_t));
+                workHandlersRunning.push_back(move(workRunning));
             }
         }
     }
