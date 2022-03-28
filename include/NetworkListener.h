@@ -614,7 +614,7 @@ namespace networking
                     delimiter_pos = msg.find(DELIMITER);
 
 #ifdef DEVELOP
-                    cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
+                    cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << buffer << endl;
 #endif // DEVELOP
 
                     // Run code to handle the message
