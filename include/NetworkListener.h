@@ -25,6 +25,7 @@
 #include <mutex>
 #include <cstring>
 #include <exception>
+#include <limits>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -96,7 +97,7 @@ namespace networking
     class NetworkListener
     {
     public:
-        NetworkListener(char delimiter) : DELIMITER{delimiter} {}
+        NetworkListener(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
         virtual ~NetworkListener() {}
 
         /**
@@ -271,6 +272,9 @@ namespace networking
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER;
 
+        // Maximum message length (incoming and outgoing) (default is 2³² - 2 = 4294967294)
+        const size_t MAXIMUM_MESSAGE_LENGTH;
+
         // Disallow copy
         NetworkListener() = delete;
         NetworkListener(const NetworkListener &) = delete;
@@ -427,6 +431,16 @@ namespace networking
         {
 #ifdef DEVELOP
             cerr << typeid(this).name() << "::" << __func__ << ": Message contains delimiter" << endl;
+#endif // DEVELOP
+
+            return false;
+        }
+
+        // Check if message is too long
+        if (msg.length() > MAXIMUM_MESSAGE_LENGTH)
+        {
+#ifdef DEVELOP
+            cerr << typeid(this).name() << "::" << __func__ << ": Message is too long" << endl;
 #endif // DEVELOP
 
             return false;
