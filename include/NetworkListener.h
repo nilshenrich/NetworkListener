@@ -616,9 +616,22 @@ namespace networking
             size_t delimiter_pos{msg.find(DELIMITER)};
             while (string::npos != delimiter_pos)
             {
-                buffer += msg.substr(0, delimiter_pos);
+                string msg_part{msg.substr(0, delimiter_pos)};
                 msg = msg.substr(delimiter_pos + 1);
                 delimiter_pos = msg.find(DELIMITER);
+
+                // Check if the message is too long
+                if (buffer.size() + msg_part.size() > MAXIMUM_MESSAGE_LENGTH)
+                {
+#ifdef DEVELOP
+                    cerr << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << " is too long" << endl;
+#endif // DEVELOP
+
+                    buffer.clear();
+                    continue;
+                }
+
+                buffer += msg_part;
 
 #ifdef DEVELOP
                 cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << buffer << endl;
