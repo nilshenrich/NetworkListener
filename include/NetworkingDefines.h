@@ -4,9 +4,9 @@
  * @brief Basic definitions for the network listener.
  * @version 1.0
  * @date 2021-12-27
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 #ifndef TLSSERVERDEFINES_H_INCLUDED
@@ -29,12 +29,6 @@ namespace networking
         NETWORKLISTENER_ERROR_START_SET_SOCKET_OPT = 41,  // Listener could not start because of TCP socket option error
         NETWORKLISTENER_ERROR_START_BIND_PORT = 42,       // Listener could not start because of TCP socket bind error
         NETWORKLISTENER_ERROR_START_LISTENER = 43         // Listener could not start because of TCP socket listen error
-    };
-
-    enum : char
-    {
-        NETWORKLISTENER_CHAR_TRANSFER_START = '\x02',
-        NETWORKLISTENER_CHAR_TRANSFER_END = '\x03'
     };
 }
 
