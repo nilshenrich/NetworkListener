@@ -6,9 +6,9 @@
  * When compiling with the -DDEBUG flag, the class will print out all received messages to the console.
  * @version 1.0
  * @date 2021-12-27
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 #ifndef NETWORKLISTENER_H
@@ -25,6 +25,7 @@
 #include <mutex>
 #include <cstring>
 #include <exception>
+#include <limits>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -60,7 +61,7 @@ namespace networking
 
     /**
      * @brief Class to manage running flag in threds.
-     * 
+     *
      */
     class NetworkListener_running_manager
     {
@@ -88,26 +89,26 @@ namespace networking
     /**
      * @brief Template class for the NetworkListener class.
      * A usable server class must be derived from this class with specific socket type (int for unencrypted TCP, SSL for TLS).
-     * 
-     * @tparam SocketType 
-     * @tparam SocketDeleter 
+     *
+     * @tparam SocketType
+     * @tparam SocketDeleter
      */
     template <class SocketType, class SocketDeleter = std::default_delete<SocketType>>
     class NetworkListener
     {
     public:
-        NetworkListener() {}
+        NetworkListener(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
         virtual ~NetworkListener() {}
 
         /**
          * @brief Starts the listener.
          * If listener was started successfully (return value NETWORKLISTENER_START_OK), the listener can accept new connections and send and receive data.
          * If encryption should be used, the server must be started with the correct path to the CA certificate and the correct path to the certificate and key file.
-         * 
-         * @param port 
-         * @param pathToCaCert 
-         * @param pathToCert 
-         * @param pathToPrivKey 
+         *
+         * @param port
+         * @param pathToCaCert
+         * @param pathToCert
+         * @param pathToPrivKey
          * @return int (NETWORKLISTENER_START_OK if successful, see NetworkListenerDefines.h for other return values)
          */
         virtual int start(const int port,
@@ -123,24 +124,24 @@ namespace networking
 
         /**
          * @brief Sends a message to a specific client (Identified by its TCP ID).
-         * 
-         * @param clientId 
-         * @param msg 
+         *
+         * @param clientId
+         * @param msg
          * @return bool (true if successful, false if not)
          */
         bool sendMsg(const int clientId, const std::string &msg);
 
         /**
          * @brief Get the IP address of a specific connected client (Identified by its TCP ID).
-         * 
-         * @param clientId 
-         * @return std::string 
+         *
+         * @param clientId
+         * @return std::string
          */
         std::string getClientIp(const int clientId);
 
         /**
          * @brief Return if listener is running
-         * 
+         *
          * @return bool (true if running, false if not)
          */
         bool isRunning() const;
@@ -149,11 +150,11 @@ namespace networking
         /**
          * @brief Initializes the listener just before starting it.
          * This method is abstract and must be implemented by derived classes.
-         * 
-         * @param pathToCaCert 
-         * @param pathToCert 
-         * @param pathToPrivKey 
-         * @return int 
+         *
+         * @param pathToCaCert
+         * @param pathToCert
+         * @param pathToPrivKey
+         * @return int
          */
         virtual int init(const char *const pathToCaCert,
                          const char *const pathToCert,
@@ -169,17 +170,17 @@ namespace networking
          * @brief Initializes a new connetion just after accepting it on unencrypted TCP level.
          * The returned socket is used to communicate with the client.
          * This method is abstract and must be implemented by derived classes.
-         * 
-         * @param clientId 
-         * @return SocketType* 
+         *
+         * @param clientId
+         * @return SocketType*
          */
         virtual SocketType *connectionInit(const int clientId) = 0;
 
         /**
          * @brief Deinitializes a connection just before closing it.
          * This method is abstract and must be implemented by derived classes.
-         * 
-         * @param socket 
+         *
+         * @param socket
          */
         virtual void connectionDeinit(SocketType *socket) = 0;
 
@@ -187,9 +188,9 @@ namespace networking
          * @brief Read raw received data from a specific client (Identified by its TCP ID).
          * This method is expected to return the read raw data as a string with blocking read (Empty string means failure).
          * This method is abstract and must be implemented by derived classes.
-         * 
-         * @param socket 
-         * @return std::string 
+         *
+         * @param socket
+         * @return std::string
          */
         virtual std::string readMsg(SocketType *socket) = 0;
 
@@ -197,10 +198,10 @@ namespace networking
          * @brief Send raw data to a specific client (Identified by its TCP ID).
          * This method is called by the sendMsg method.
          * This method is abstract and must be implemented by derived classes.
-         * 
-         * @param clientId 
-         * @param msg 
-         * @return bool 
+         *
+         * @param clientId
+         * @param msg
+         * @return bool
          */
         virtual bool writeMsg(const int clientId, const std::string &msg) = 0;
 
@@ -208,9 +209,9 @@ namespace networking
          * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
          * This method is called automatically as soon as a new message is received.
          * This method is abstract and must be implemented by derived classes.
-         * 
-         * @param clientId 
-         * @param msg 
+         *
+         * @param clientId
+         * @param msg
          */
         virtual void workOnMessage(const int clientId, const std::string msg) = 0;
 
@@ -218,8 +219,8 @@ namespace networking
          * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
          * This method is called automatically as soon as a connection is closed or broken.
          * This method is abstract and must be implemented by derived classes.
-         * 
-         * @param clientId 
+         *
+         * @param clientId
          */
         virtual void workOnClosed(const int clientId) = 0;
 
@@ -242,8 +243,8 @@ namespace networking
         /**
          * @brief Read incoming data from a specific connected client (Identified by its TCP ID).
          * This method runs infinitely in a separate thread while the specific client is connected.
-         * 
-         * @param clientId 
+         *
+         * @param clientId
          */
         void listenerReceive(const int clientId);
 
@@ -268,7 +269,14 @@ namespace networking
         // Flag to indicate if the listener is running
         bool running{false};
 
+        // Delimiter for the message framing (incoming and outgoing) (default is '\n')
+        const char DELIMITER;
+
+        // Maximum message length (incoming and outgoing) (default is 2³² - 2 = 4294967294)
+        const size_t MAXIMUM_MESSAGE_LENGTH;
+
         // Disallow copy
+        NetworkListener() = delete;
         NetworkListener(const NetworkListener &) = delete;
         NetworkListener &operator=(const NetworkListener &) = delete;
     };
@@ -418,10 +426,30 @@ namespace networking
     {
         using namespace std;
 
+        // Check if message doesn't contain delimiter
+        if (msg.find(DELIMITER) != string::npos)
+        {
+#ifdef DEVELOP
+            cerr << typeid(this).name() << "::" << __func__ << ": Message contains delimiter" << endl;
+#endif // DEVELOP
+
+            return false;
+        }
+
+        // Check if message is too long
+        if (msg.length() > MAXIMUM_MESSAGE_LENGTH)
+        {
+#ifdef DEVELOP
+            cerr << typeid(this).name() << "::" << __func__ << ": Message is too long" << endl;
+#endif // DEVELOP
+
+            return false;
+        }
+
         // Extend message with start and end characters and send it
         lock_guard<mutex> lck{activeConnections_m};
         if (activeConnections.find(clientId) != activeConnections.end())
-            return writeMsg(clientId, string{NETWORKLISTENER_CHAR_TRANSFER_START} + msg + string{NETWORKLISTENER_CHAR_TRANSFER_END});
+            return writeMsg(clientId, msg + string{DELIMITER});
 
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Client " << clientId << " is not connected" << endl;
@@ -583,62 +611,65 @@ namespace networking
                 return;
             }
 
-            // The message is between STX and ETX in the stream
-            // Extract the message
-            for (char c : msg)
+            // Get raw message separated by delimiter
+            // If delimiter is found, the message is split into two parts
+            size_t delimiter_pos{msg.find(DELIMITER)};
+            while (string::npos != delimiter_pos)
             {
-                switch (c)
+                string msg_part{msg.substr(0, delimiter_pos)};
+                msg = msg.substr(delimiter_pos + 1);
+                delimiter_pos = msg.find(DELIMITER);
+
+                // Check if the message is too long
+                if (buffer.size() + msg_part.size() > MAXIMUM_MESSAGE_LENGTH)
                 {
-                // Start of message -> empty buffer
-                case NETWORKLISTENER_CHAR_TRANSFER_START:
-                    buffer.clear();
-                    break;
-
-                // End of message -> process the message (Buffer gets cleared by move)
-                case NETWORKLISTENER_CHAR_TRANSFER_END:
 #ifdef DEVELOP
-                    cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << msg << endl;
+                    cerr << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << " is too long" << endl;
 #endif // DEVELOP
-                    {
-                        unique_ptr<bool> workRunning{new bool{true}};
-                        thread work_t{[this, clientId, &buffer](bool *workRunning_p)
-                                      {
-                                          // Mark Thread as running
-                                          NetworkListener_running_manager running_mgr{*workRunning_p};
 
-                                          // Run code to handle the incoming message
-                                          workOnMessage(clientId, move(buffer));
-
-                                          return;
-                                      },
-                                      workRunning.get()};
-
-                        // Remove all finished work handlers from the vector
-                        lock_guard<mutex> lck{workHandlers_m};
-                        size_t workHandlers_s{workHandlersRunning.size()};
-                        for (size_t i{0}; i < workHandlers_s; i += 1)
-                        {
-                            if (!*workHandlersRunning[i].get())
-                            {
-                                workHandlers[i].join();
-                                workHandlers.erase(workHandlers.begin() + i);
-                                workHandlersRunning.erase(workHandlersRunning.begin() + i);
-                                i -= 1;
-                                workHandlers_s -= 1;
-                            }
-                        }
-
-                        workHandlers.push_back(move(work_t));
-                        workHandlersRunning.push_back(move(workRunning));
-                    }
-                    break;
-
-                // Middle of message -> store character in buffer
-                default:
-                    buffer.push_back(c);
-                    break;
+                    buffer.clear();
+                    continue;
                 }
+
+                buffer += msg_part;
+
+#ifdef DEVELOP
+                cout << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << ": " << buffer << endl;
+#endif // DEVELOP
+
+                // Run code to handle the message
+                unique_ptr<bool> workRunning{new bool{true}};
+                thread work_t{[this, clientId](bool *workRunning_p, string buffer)
+                              {
+                                  // Mark Thread as running
+                                  NetworkListener_running_manager running_mgr{*workRunning_p};
+
+                                  // Run code to handle the incoming message
+                                  workOnMessage(clientId, move(buffer));
+
+                                  return;
+                              },
+                              workRunning.get(), move(buffer)};
+
+                // Remove all finished work handlers from the vector
+                lock_guard<mutex> lck{workHandlers_m};
+                size_t workHandlers_s{workHandlersRunning.size()};
+                for (size_t i{0}; i < workHandlers_s; i += 1)
+                {
+                    if (!*workHandlersRunning[i].get())
+                    {
+                        workHandlers[i].join();
+                        workHandlers.erase(workHandlers.begin() + i);
+                        workHandlersRunning.erase(workHandlersRunning.begin() + i);
+                        i -= 1;
+                        workHandlers_s -= 1;
+                    }
+                }
+
+                workHandlers.push_back(move(work_t));
+                workHandlersRunning.push_back(move(workRunning));
             }
+            buffer += msg;
         }
     }
 
