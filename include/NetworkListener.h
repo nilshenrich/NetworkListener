@@ -390,6 +390,10 @@ namespace networking
         // Listener is now running
         running = true;
 
+#ifdef DEVELOP
+        cout << typeid(this).name() << "::" << __func__ << ": Listener started on port " << port << endl;
+#endif // DEVELOP
+
         return initCode;
     }
 
@@ -417,6 +421,10 @@ namespace networking
 
         // Deinitialize the listener
         deinit();
+
+#ifdef DEVELOP
+        cout << typeid(this).name() << "::" << __func__ << ": Listener stopped" << endl;
+#endif // DEVELOP
 
         return;
     }
