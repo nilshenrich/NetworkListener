@@ -510,11 +510,11 @@ namespace networking
 #endif // DEVELOP
 
             // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
-            lock_guard<mutex> lck{recHandlers_m};
             thread rec_t{&NetworkListener::listenerReceive, this, newConnection};
 
             // Get all finished receive handlers
             vector<int> toRemove;
+            lock_guard<mutex> lck{recHandlers_m};
             for (auto &flag : recHandlersRunning)
             {
                 if (!flag.second)
@@ -560,7 +560,10 @@ namespace networking
         using namespace std;
 
         // Mark Thread as running
-        NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
+        {
+            lock_guard<mutex> lck{recHandlers_m};
+            NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
+        }
 
         // Initialize the (so far uncrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
