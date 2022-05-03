@@ -560,10 +560,7 @@ namespace networking
         using namespace std;
 
         // Mark Thread as running
-        {
-            lock_guard<mutex> lck{recHandlers_m};
-            NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
-        }
+        NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
 
         // Initialize the (so far uncrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
