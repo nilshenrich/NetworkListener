@@ -560,7 +560,9 @@ namespace networking
         using namespace std;
 
         // Mark Thread as running
+        recHandlers_m.lock();
         NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
+        recHandlers_m.unlock();
 
         // Initialize the (so far uncrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
