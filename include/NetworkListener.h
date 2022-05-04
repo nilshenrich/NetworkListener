@@ -246,7 +246,7 @@ namespace networking
          *
          * @param clientId
          */
-        void listenerReceive(const int clientId);
+        void listenerReceive(const int clientId, bool *const recRunning_p);
 
         // Socket address for the listener
         struct sockaddr_in socketAddress
@@ -261,10 +261,7 @@ namespace networking
 
         // All receiving threads (One per connected client) and their running status
         std::map<int, std::thread> recHandlers{};
-        std::map<int, bool> recHandlersRunning{};
-
-        // Mutex to protect the recHandlersRunning map (recHandlers map doesn't need to be protected because it is only accessed from the accept thread)
-        std::mutex recHandlers_m{};
+        std::map<int, std::unique_ptr<bool>> recHandlersRunning{};
 
         // Flag to indicate if the listener is running
         bool running{false};
@@ -510,14 +507,14 @@ namespace networking
 #endif // DEVELOP
 
             // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
-            lock_guard<mutex> lck{recHandlers_m};
-            thread rec_t{&NetworkListener::listenerReceive, this, newConnection};
+            unique_ptr<bool> recRunning{new bool{true}};
+            thread rec_t{&NetworkListener::listenerReceive, this, newConnection, recRunning.get()};
 
             // Get all finished receive handlers
             vector<int> toRemove;
             for (auto &flag : recHandlersRunning)
             {
-                if (!flag.second)
+                if (!*flag.second.get())
                     toRemove.push_back(flag.first);
             }
 
@@ -531,6 +528,7 @@ namespace networking
 
             // Add new receive handler (Running flag is added inside receive thread)
             recHandlers[newConnection] = move(rec_t);
+            recHandlersRunning[newConnection] = move(recRunning);
         }
 
         // Close all active connections
@@ -554,14 +552,12 @@ namespace networking
     }
 
     template <class SocketType, class SocketDeleter>
-    void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clientId)
+    void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clientId, bool *const recRunning_p)
     {
         using namespace std;
 
         // Mark Thread as running (Add running flag and connect to handler)
-        recHandlers_m.lock();
-        NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
-        recHandlers_m.unlock();
+        NetworkListener_running_manager running_mgr{*recRunning_p};
 
         // Initialize the (so far uncrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
@@ -645,7 +641,7 @@ namespace networking
 
                 // Run code to handle the message
                 unique_ptr<bool> workRunning{new bool{true}};
-                thread work_t{[this, clientId](bool *workRunning_p, string buffer)
+                thread work_t{[this, clientId](bool *const workRunning_p, string buffer)
                               {
                                   // Mark Thread as running
                                   NetworkListener_running_manager running_mgr{*workRunning_p};
