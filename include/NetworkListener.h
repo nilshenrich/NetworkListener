@@ -578,9 +578,6 @@ namespace networking
         vector<thread> workHandlers;
         vector<unique_ptr<bool>> workHandlersRunning;
 
-        // Mutex to protect the work handler vectors
-        mutex workHandlers_m;
-
         // Read incoming messages from this connection as long as the connection is active
         string buffer;
         while (1)
