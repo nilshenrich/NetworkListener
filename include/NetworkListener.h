@@ -529,9 +529,8 @@ namespace networking
                 recHandlersRunning.erase(id);
             }
 
-            // Add new receive handler
+            // Add new receive handler (Running flag is added inside receive thread)
             recHandlers[newConnection] = move(rec_t);
-            recHandlersRunning[newConnection] = true;
         }
 
         // Close all active connections
@@ -559,7 +558,7 @@ namespace networking
     {
         using namespace std;
 
-        // Mark Thread as running
+        // Mark Thread as running (Add running flag and connect to handler)
         recHandlers_m.lock();
         NetworkListener_running_manager running_mgr{recHandlersRunning[clientId]};
         recHandlers_m.unlock();
