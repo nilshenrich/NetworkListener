@@ -212,8 +212,7 @@ string TlsServer::readMsg(SSL *socket)
 
 void TlsServer::connectionDeinit(SSL *socket)
 {
-    if (isRunning())
-        SSL_shutdown(socket);
+    SSL_shutdown(socket);
     return;
 }
 
