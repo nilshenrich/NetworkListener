@@ -212,6 +212,7 @@ string TlsServer::readMsg(SSL *socket)
 
 void TlsServer::connectionDeinit(SSL *socket)
 {
+    // Shutdown TLS channel. Memory will be freed automatically on deletion
     SSL_shutdown(socket);
     return;
 }
