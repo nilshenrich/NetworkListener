@@ -133,7 +133,7 @@ namespace networking
       void workOnClosed(const int clientId) override final;
 
       // TLS context of the server
-      SSL_CTX *serverContext{nullptr};
+      std::unique_ptr<SSL_CTX, void (*)(SSL_CTX *)> serverContext{nullptr, SSL_CTX_free};
 
       // Disallow copy
       TlsServer(const TlsServer &) = delete;

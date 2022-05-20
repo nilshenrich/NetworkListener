@@ -19,7 +19,8 @@ int TlsServer::init(const char *const pathToCaCert,
 
     // Set encrytion method (Latest version of TLS server side)
     // Stop server and return error if it fails
-    if (!(serverContext = SSL_CTX_new(TLS_server_method())))
+    serverContext.reset(SSL_CTX_new(TLS_server_method()));
+    if (!serverContext.get())
     {
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Error when setting encryption method" << endl;
@@ -64,7 +65,7 @@ int TlsServer::init(const char *const pathToCaCert,
 
     // Load CA certificate
     // Stop server and return error if it fails
-    if (1 != SSL_CTX_load_verify_locations(serverContext, pathToCaCert, nullptr))
+    if (1 != SSL_CTX_load_verify_locations(serverContext.get(), pathToCaCert, nullptr))
     {
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Error when reading CA certificate \"" << pathToCaCert << "\"" << endl;
@@ -75,11 +76,11 @@ int TlsServer::init(const char *const pathToCaCert,
     }
 
     // Set CA certificate as verification certificate to verify client certificate
-    SSL_CTX_set_client_CA_list(serverContext, SSL_load_client_CA_file(pathToCaCert));
+    SSL_CTX_set_client_CA_list(serverContext.get(), SSL_load_client_CA_file(pathToCaCert));
 
     // Load server certificate
     // Stop server and return error if it fails
-    if (1 != SSL_CTX_use_certificate_file(serverContext, pathToCert, SSL_FILETYPE_PEM))
+    if (1 != SSL_CTX_use_certificate_file(serverContext.get(), pathToCert, SSL_FILETYPE_PEM))
     {
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Error when loading server certificate \"" << pathToCert << "\"" << endl;
@@ -91,7 +92,7 @@ int TlsServer::init(const char *const pathToCaCert,
 
     // Load server private key (Includes check with certificate)
     // Stop server and return error if it fails
-    if (1 != SSL_CTX_use_PrivateKey_file(serverContext, pathToPrivKey, SSL_FILETYPE_PEM))
+    if (1 != SSL_CTX_use_PrivateKey_file(serverContext.get(), pathToPrivKey, SSL_FILETYPE_PEM))
     {
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Error when loading server private key \"" << pathToPrivKey << "\"" << endl;
@@ -102,21 +103,20 @@ int TlsServer::init(const char *const pathToCaCert,
     }
 
     // Set TLS mode (Auto retry)
-    SSL_CTX_set_mode(serverContext, SSL_MODE_AUTO_RETRY);
+    SSL_CTX_set_mode(serverContext.get(), SSL_MODE_AUTO_RETRY);
 
     // Force client authentication
-    SSL_CTX_set_verify(serverContext, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, NULL);
+    SSL_CTX_set_verify(serverContext.get(), SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | SSL_VERIFY_CLIENT_ONCE, NULL);
 
     // Check client certificate (CA certificate must be direct issuer)
-    SSL_CTX_set_verify_depth(serverContext, 1);
+    SSL_CTX_set_verify_depth(serverContext.get(), 1);
 
     return NETWORKLISTENER_START_OK;
 }
 
 void TlsServer::deinit()
 {
-    SSL_CTX_free(serverContext);
-    serverContext = nullptr;
+    serverContext.release();
 
     return;
 }
@@ -125,7 +125,7 @@ SSL *TlsServer::connectionInit(const int clientId)
 {
     // Create new TLS channel
     // Close connection and return nullptr if it fails
-    SSL *tlsSocket{SSL_new(serverContext)};
+    SSL *tlsSocket{SSL_new(serverContext.get())};
     if (!tlsSocket)
     {
 #ifdef DEVELOP
