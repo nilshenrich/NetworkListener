@@ -114,13 +114,6 @@ int TlsServer::init(const char *const pathToCaCert,
     return NETWORKLISTENER_START_OK;
 }
 
-void TlsServer::deinit()
-{
-    serverContext.release();
-
-    return;
-}
-
 SSL *TlsServer::connectionInit(const int clientId)
 {
     // Create new TLS channel

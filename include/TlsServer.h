@@ -77,12 +77,6 @@ namespace networking
                const char *const pathToPrivKey) override final;
 
       /**
-       * @brief Deinitialize the server (Close all encrypted connections).
-       *
-       */
-      void deinit() override final;
-
-      /**
        * @brief Initialize connection to a specific client (Identified by its TCP ID) (Do TLS handshake).
        *
        * @param clientId

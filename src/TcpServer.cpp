@@ -17,11 +17,6 @@ int TcpServer::init(const char *const,
     return NETWORKLISTENER_START_OK;
 }
 
-void TcpServer::deinit()
-{
-    return;
-}
-
 int *TcpServer::connectionInit(const int clientId)
 {
     return new int{clientId};
