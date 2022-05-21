@@ -33,37 +33,46 @@ As the names say, **libnetworkListenerTcp** creates a simple TCP server with no 
 As already mentioned in [General explanation](#general-explanation), this project contains two installable libraries **libnetworkListenerTcp** and **libnetworkListenerTcp**. These libraries can be installed this way:
 
 1. Install **build-essential**, **cmake**, **openssl** and **libssl-dev**:
+
     ```console
     sudo apt install build-essential cmake openssl libssl-dev
     ```
+
     - **build-essential** contains compilers and libraries to compile C/C++ code on debian-based systems.
     - **cmake** is used to easily create a Makefile.
     - **openssl** is a great toolbox for any kind of tasks about encryption and certification. It is here used to create certificates and keys used for encryption with TLS.
     - **libssl-dev** is the openssl library for C/C++.
 
 1. Create a new folder **build** in the repositories root directory where everything can be compiled to:
+
     ```console
     mkdir build
     ```
 
 1. Navigate to this newly created **build** folder and run the compilation process:
+
     ```console
     cd build
     cmake ..
     make
     ```
+
     *To get information printed on the screen, the package can be built in debug mode (Not recommended when installing libraries) by setting the define: __cmake&#160;&#x2011;DCMAKE_BUILD_TYPE=Debug&#160;..__ (Same when compiling example)*
 
 1. To install the created libraries and header files to your system, run
+
     ```console
     sudo make install
     ```
 
 1. (optional) In some systems the library paths need to be updated before **libnetworkListenerTcp** and **libnetworkListenerTcp** can be used. So if you get an error like
+
     ```
     ./example: error while loading shared libraries: libnetworkListenerTcp.so.1: cannot open shared object file: No such file or directory
     ```
+
     please run
+
     ```console
     sudo /sbin/ldconfig
     ```
@@ -77,6 +86,7 @@ To use this package, a new class must be created deriving from **TcpServer** or 
 In this case, I would recommend a private derivation, because all **TcpServer**/**TlsServer** methods are not meant to be used in other places than a direct child class.
 
 1. Create a new class derived from **TcpServer** and **TlsServer**:
+
     ```cpp
     #include "NetworkListener/TcpServer.h"
     #include "NetworkListener/TlsServer.h"
@@ -96,12 +106,14 @@ In this case, I would recommend a private derivation, because all **TcpServer**/
 
 1. Implement abstract methods from base classes
     1. Work on message over TCP (unencrypted):
+
         ```cpp
         void workOnMessage_TcpServer(const int tcpClientId, const std::string tcpMsgFromClient)
         {
             // Do some stuff when message is received
         }
         ```
+
         This method is called automatically as soon as a new message from a client is received over an unencrypted TCP connection.
 
         Parameters:
@@ -110,39 +122,46 @@ In this case, I would recommend a private derivation, because all **TcpServer**/
         - The **tcpMsgFromClient** parameter contains the received message as raw string.
 
         This method is started in its own thread. So feel free to insert time intensive code here, the listener continues running in parallel. But please make sure, your inserted code is thread safe (e.g. use [mutex](https://en.cppreference.com/w/cpp/thread/mutex)), so multiple executions of this method at the same time don't lead to a program crash.
-    
+
     1. Work on a closed TCP connection:
+
         ```cpp
         workOnClosed_TcpServer(const int tcpClientId)
         {
             // Do some stuff when existing TCP connection is closed
         }
         ```
+
         This method is called as soon as an established TCP to a client is closed. When this method has finished, the TCP socket gets completely closed to have it open again for new connections.
 
         The **tcpClientId** parameter is the TCP ID of the client whose connection is closed. This number is used to identify connected clients.
 
     1. Work on message over TLS (encrypted):
+
         ```cpp
         void workOnMessage_TlsServer(const int tlsClientId, const std::string tlsMsgFromClient)
         {
             // Do some stuff when message is received
         }
         ```
+
         This method is just the same as **workOnMessage_TcpServer**, but for receiving an encrypted message over a TLS connection.
 
     1. Work on a closed TLS connection:
+
         ```cpp
         void workOnClosed_TlsServer(const int tlsClientId)
         {
             // Do some stuff when existing TLS connection is closed
         }
         ```
+
         This method is just the same as **workOnClosed_TcpServer**, but for a closed TLS connection.
-    
+
     **!! Please do never call one of these 4 abstract methods somewhere in your code. These methods are automatically called by the NetworkListener library.**
 
     *Please note that all parameters of these abstract methods are **const**, so they can't be changed. If you need to do a message adaption, but don't want to copy the whole string for performance reasons, use the **move**-constructor:*
+
     ```cpp
     std::string modifyable = std::move(tcpMsgFromClient);
     modifyable += '\n'; // Message modification
@@ -157,6 +176,7 @@ But there are some further methods worth knowing about.
 
     The **start**-method is used to start a TCP or TLS listener. When this method returns 0, the listener runs in the background. If the return value is other that 0, please see [NetworkingDefines.h](https://github.com/nilshenrich/NetworkListener/blob/main/include/NetworkingDefines.h) for definition of error codes.\
     If your class derived from both **TcpServer** and **TlsServer**, the class name must be specified when calling **start()**:
+
     ```cpp
     TcpServer::start(8081);
     TlsServer::start(8082, "ca_cert.pem", "server_cert.pem", "server_key.pem");
@@ -166,6 +186,7 @@ But there are some further methods worth knowing about.
 
     The **stop**-method stops a running listener.\
     As for **start()**, if your class derived from both **TcpServer** and **TlsServer**, the class name must be specified when calling **stop()**:
+
     ```cpp
     TcpServer::stop();
     TlsServer::stop();
@@ -175,10 +196,12 @@ But there are some further methods worth knowing about.
 
     The **sendMsg**-method sends a message to a connected client (over TCP or TLS). If the return value is **true**, the sending was succesful, if it is **false**, not.\
     As for **start()**, if your class derived from both **TcpServer** and **TlsServer**, the class name must be specified when calling **sendMsg()**:
+
     ```cpp
     TcpServer::sendMsg(4, "example message over TCP");
     TlsServer::sendMsg(5, "example message over TLS");
     ```
+
     Please make sure to only use **TcpServer::sendMsg()** for TCP connections and **TlsServer::sendMsg()** for TLS connection.
 
 1. getClientIp():
@@ -187,10 +210,10 @@ But there are some further methods worth knowing about.
 
 1. TlsServer::getSubjPartFromClientCert():
 
-    The **getSubjPartFromClientCert**-method only exists for **TlsServer** and returns a given subject part of the client's certificate identified by its TCP ID or its tlsSocket (SSL*). If the tlsSocket parameter is *nullptr*, the client is identified by its TCP ID, otherwise it is identified by the given tlsSocket parmeter.
+    The **getSubjPartFromClientCert**-method only exists for **TlsServer** and returns a given subject part of the client's certificate identified by its TCP ID or its tlsSocket (SSL*). If the tlsSocket parameter is*nullptr*, the client is identified by its TCP ID, otherwise it is identified by the given tlsSocket parmeter.
 
     The subject of a cerfificate contains information about the cerficate owner. Here is a list of all subject parts and how to get them using **getSubjPartFromClientCert()**:
-    
+
     - **NID_countryName**: Country code (Germany = DE)
     - **NID_stateOrProvinceName**: State or province name (e.g. Baden-Württemberg)
     - **NID_localityName**: City name (e.g. Stuttgart)
@@ -199,9 +222,11 @@ But there are some further methods worth knowing about.
     - **NID_commonName**: Name of owner
 
     For example
+
     ```cpp
     getSubjPartFromClientCert(4, nullptr, NID_localityName);
     ```
+
     will return "Stuttgart" if this is the client's city name.
 
 1. isRunning():
@@ -218,6 +243,7 @@ The example program runs for 10 seconds. Within this time range, it can accept n
 ## Create certificates
 
 Before the encrypted TLS listener can run properly, the needed certificates and private keys need to be created. To do this, just run the bash file
+
 ```console
 example/CMakeLists.txt
 ```
@@ -225,6 +251,7 @@ example/CMakeLists.txt
 ## Run example
 
 The example can be compiled the same way as the libraries (Without installing at the end):
+
 ```console
 cd example
 mkdir build
