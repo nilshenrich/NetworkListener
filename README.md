@@ -22,7 +22,7 @@ The compatible client can be found [here](https://github.com/nilshenrich/Network
 
 This project contains installable C++ libraries for a server (listener) on TCP level. A client can connect to the server and data can be sent in both directions.
 
-This packge contains two libraries: **libnetworkListenerTcp** and **libnetworkListenerTcp**.\
+This package contains two libraries: **libnetworkListenerTcp** and **libnetworkListenerTcp**.\
 As the names say, **libnetworkListenerTcp** creates a simple TCP server with no security. The **libnetworkListenerTcp** creates a server on TLS level. This means, an established connection is encrypted with the latest compatible TLS version and a client is forced to authenticate itself.
 
 ### Specifications
@@ -165,8 +165,8 @@ In this case, I would recommend a private derivation, because all **TcpServer**/
     *Please note that all parameters of these abstract methods are **const**, so they can't be changed. If you need to do a message adaption, but don't want to copy the whole string for performance reasons, use the **move**-constructor:*
 
     ```cpp
-    std::string modifyable = std::move(tcpMsgFromClient);
-    modifyable += '\n'; // Message modification
+    std::string modifiable = std::move(tcpMsgFromClient);
+    modifiable += '\n'; // Message modification
     ```
 
 After these two steps your program is ready to be compiled.\
@@ -196,7 +196,7 @@ But there are some further methods worth knowing about.
 
 1. sendMsg():
 
-    The **sendMsg**-method sends a message to a connected client (over TCP or TLS). If the return value is **true**, the sending was succesful, if it is **false**, not.\
+    The **sendMsg**-method sends a message to a connected client (over TCP or TLS). If the return value is **true**, the sending was successful, if it is **false**, not.\
     As for **start()**, if your class derived from both **TcpServer** and **TlsServer**, the class name must be specified when calling **sendMsg()**:
 
     ```cpp
@@ -212,9 +212,9 @@ But there are some further methods worth knowing about.
 
 1. TlsServer::getSubjPartFromClientCert():
 
-    The **getSubjPartFromClientCert**-method only exists for **TlsServer** and returns a given subject part of the client's certificate identified by its TCP ID or its tlsSocket (SSL*). If the tlsSocket parameter is*nullptr*, the client is identified by its TCP ID, otherwise it is identified by the given tlsSocket parmeter.
+    The **getSubjPartFromClientCert**-method only exists for **TlsServer** and returns a given subject part of the client's certificate identified by its TCP ID or its tlsSocket (SSL*). If the tlsSocket parameter is*nullptr*, the client is identified by its TCP ID, otherwise it is identified by the given tlsSocket parameter.
 
-    The subject of a cerfificate contains information about the cerficate owner. Here is a list of all subject parts and how to get them using **getSubjPartFromClientCert()**:
+    The subject of a certificate contains information about the certificate owner. Here is a list of all subject parts and how to get them using **getSubjPartFromClientCert()**:
 
     - **NID_countryName**: Country code (Germany = DE)
     - **NID_stateOrProvinceName**: State or province name (e.g. Baden-Württemberg)
@@ -239,7 +239,7 @@ But there are some further methods worth knowing about.
 
 ## Example
 
-This repository contains a small example to show the usage of this package. It creates two listeners, one using unsecure TCP, the other using ecrypted and two-way-authenticated TLS (two-way authentication means, the server authenticates itself with a CA-signed certificate ad forces the client to also authenticate itself with his own CA-signed certificate).\
+This repository contains a small example to show the usage of this package. It creates two listeners, one using unsecure TCP, the other using encrypted and two-way-authenticated TLS (two-way authentication means, the server authenticates itself with a CA-signed certificate ad forces the client to also authenticate itself with his own CA-signed certificate).\
 The example program runs for 10 seconds. Within this time range, it can accept new client connections and receive data. Received data will be printed on the screen and sent back to the sending client.
 
 ### Create certificates
@@ -265,9 +265,9 @@ make
 
 ## System requirements
 
-Linux distro based on debian buster or later.
+Linux distribution based on debian buster or later.
 
-The installation process in this project is adapted to debian-based linux distros. But smart guys maybe achieve to make it usable on other sytems (In the end it is just C++ code compilable with C++17 standard or higher).
+The installation process in this project is adapted to debian-based linux distributions. But smart guys maybe achieve to make it usable on other systems (In the end it is just C++ code compilable with C++17 standard or higher).
 
 ## Known issues
 
