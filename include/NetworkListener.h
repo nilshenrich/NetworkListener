@@ -161,12 +161,6 @@ namespace networking
                          const char *const pathToPrivKey) = 0;
 
         /**
-         * @brief Deinitializes the listener just after stopping it.
-         * This method is abstract and must be implemented by derived classes.
-         */
-        virtual void deinit() = 0;
-
-        /**
          * @brief Initializes a new connetion just after accepting it on unencrypted TCP level.
          * The returned socket is used to communicate with the client.
          * This method is abstract and must be implemented by derived classes.
@@ -415,9 +409,6 @@ namespace networking
 
         // Close listening TCP socket
         close(tcpSocket);
-
-        // Deinitialize the listener
-        deinit();
 
 #ifdef DEVELOP
         cout << typeid(this).name() << "::" << __func__ << ": Listener stopped" << endl;

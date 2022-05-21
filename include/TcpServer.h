@@ -50,11 +50,6 @@ namespace networking
                const char *const) override final;
 
       /**
-       * @brief Deinitialize the server (Do nothing).
-       */
-      void deinit() override final;
-
-      /**
        * @brief Initialize connection to a specific client (Identified by its TCP ID) (Do nothing. Just return pointer to TCP ID).
        *
        * @param clientId

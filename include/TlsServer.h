@@ -77,12 +77,6 @@ namespace networking
                const char *const pathToPrivKey) override final;
 
       /**
-       * @brief Deinitialize the server (Close all encrypted connections).
-       *
-       */
-      void deinit() override final;
-
-      /**
        * @brief Initialize connection to a specific client (Identified by its TCP ID) (Do TLS handshake).
        *
        * @param clientId
@@ -133,7 +127,7 @@ namespace networking
       void workOnClosed(const int clientId) override final;
 
       // TLS context of the server
-      SSL_CTX *serverContext{nullptr};
+      std::unique_ptr<SSL_CTX, void (*)(SSL_CTX *)> serverContext{nullptr, SSL_CTX_free};
 
       // Disallow copy
       TlsServer(const TlsServer &) = delete;
