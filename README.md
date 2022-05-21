@@ -26,7 +26,7 @@ As the names say, **libnetworkListenerTcp** creates a simple TCP server with no 
 ### Specifications
 
 1. Maximum number of connected clients at the same time: **4096**
-1. Maximum message size (Sending and receiving):  **std::string::max_size() - 1** (2³² - 2 (4294967293) for most systems)
+1. Maximum message size (Sending and receiving):  **std::string::max_size() - 1** (2³² - 2 (4294967294) for most systems)
 
 ## Installation
 
