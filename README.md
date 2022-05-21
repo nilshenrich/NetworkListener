@@ -4,7 +4,7 @@ Installable package to set up a server clients can connect to on TCP level and s
 
 The compatible client can be found [here](https://github.com/nilshenrich/NetworkClient)
 
-# Table of contents
+## Table of contents
 
 1. [General explanation](#general-explanation)
     1. [Specifications](#specifications)
@@ -16,19 +16,19 @@ The compatible client can be found [here](https://github.com/nilshenrich/Network
     1. [Run example](#run-example)
 1. [System requirements](#system-requirements)
 
-# General explanation
+## General explanation
 
 This project contains installable C++ libraries for a server (listener) on TCP level. A client can connect to the server and data can be sent in both directions.
 
 This packge contains two libraries: **libnetworkListenerTcp** and **libnetworkListenerTcp**.\
 As the names say, **libnetworkListenerTcp** creates a simple TCP server with no security. The **libnetworkListenerTcp** creates a server on TLS level. This means, an established connection is encrypted with the latest compatible TLS version and a client is forced to authenticate itself.
 
-## Specifications
+### Specifications
 
 1. Maximum number of connected clients at the same time: **4096**
 1. Maximum message size:  **std::string::max_size() - 2** (2<sup>32</sup> - 3 (4294967293) for most systems)
 
-# Installation
+## Installation
 
 As already mentioned in [General explanation](#general-explanation), this project contains two installable libraries **libnetworkListenerTcp** and **libnetworkListenerTcp**. These libraries can be installed this way:
 
@@ -77,7 +77,7 @@ As already mentioned in [General explanation](#general-explanation), this projec
     sudo /sbin/ldconfig
     ```
 
-# Usage
+## Usage
 
 *In the subfolder [example](https://github.com/nilshenrich/NetworkListener/blob/main/example/main.cpp) you can find a good and simple example program that shows how to use the package*
 
@@ -170,7 +170,7 @@ In this case, I would recommend a private derivation, because all **TcpServer**/
 After these two steps your program is ready to be compiled.\
 But there are some further methods worth knowing about.
 
-## Non-abstract Methods
+### Non-abstract Methods
 
 1. start():
 
@@ -235,12 +235,12 @@ But there are some further methods worth knowing about.
     **True** means: *The listener is running*\
     **False** means: *The listener is not running*
 
-# Example
+## Example
 
 This repository contains a small example to show the usage of this package. It creates two listeners, one using unsecure TCP, the other using ecrypted and two-way-authenticated TLS (two-way authentication means, the server authenticates itself with a CA-signed certificate ad forces the client to also authenticate itself with his own CA-signed certificate).\
 The example program runs for 10 seconds. Within this time range, it can accept new client connections and receive data. Received data will be printed on the screen and sent back to the sending client.
 
-## Create certificates
+### Create certificates
 
 Before the encrypted TLS listener can run properly, the needed certificates and private keys need to be created. To do this, just run the bash file
 
@@ -248,7 +248,7 @@ Before the encrypted TLS listener can run properly, the needed certificates and 
 example/CMakeLists.txt
 ```
 
-## Run example
+### Run example
 
 The example can be compiled the same way as the libraries (Without installing at the end):
 
@@ -261,7 +261,7 @@ make
 ./example
 ```
 
-# System requirements
+## System requirements
 
 Linux distro based on debian buster or later.
 
