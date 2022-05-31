@@ -550,7 +550,7 @@ namespace networking
         // Mark Thread as running (Add running flag and connect to handler)
         NetworkListener_running_manager running_mgr{*recRunning_p};
 
-        // Initialize the (so far uncrypted) connection
+        // Initialize the (so far unencrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
         if (!connection_p)
             return;
@@ -561,6 +561,32 @@ namespace networking
             activeConnections[clientId] = unique_ptr<SocketType, SocketDeleter>{connection_p};
         }
 
+        // Send small message marking an established connection
+        if (!writeMsg(clientId, string{1, DELIMITER}))
+        {
+#ifdef DEVELOP
+            cerr << typeid(this).name() << "::" << __func__ << ": Failed to send message to client marking this connection to be established " << clientId << endl;
+#endif // DEVELOP
+
+            {
+                lock_guard<mutex> lck{activeConnections_m};
+
+                // Deinitialize the connection
+                connectionDeinit(connection_p);
+
+                // Block the connection from being used anymore
+                shutdown(clientId, SHUT_RDWR);
+
+                // Remove connection from active connections
+                activeConnections.erase(clientId);
+            }
+
+            // Close the connection
+            close(clientId);
+
+            return;
+        }
+
         // Vectors of running work handlers and their status flags
         vector<thread> workHandlers;
         vector<unique_ptr<bool>> workHandlersRunning;
@@ -569,7 +595,7 @@ namespace networking
         string buffer;
         while (1)
         {
-            // Wait for new incoming message (iplemented in derived classes)
+            // Wait for new incoming message (implemented in derived classes)
             // If message is empty string, the connection is broken
             string msg{readMsg(connection_p)};
             if (msg.empty())
