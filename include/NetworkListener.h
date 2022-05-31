@@ -562,9 +562,7 @@ namespace networking
         }
 
         // Send small message marking an established connection
-        // TODO: Message shorter (One byte)
-        // TODO: Define message in NetworkDefines.h
-        if (!writeMsg(clientId, "+++++ Established connection +++++"))
+        if (!writeMsg(clientId, string{1, DELIMITER}))
         {
 #ifdef DEVELOP
             cerr << typeid(this).name() << "::" << __func__ << ": Failed to send message to client marking this connection to be established " << clientId << endl;
