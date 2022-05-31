@@ -550,7 +550,7 @@ namespace networking
         // Mark Thread as running (Add running flag and connect to handler)
         NetworkListener_running_manager running_mgr{*recRunning_p};
 
-        // Initialize the (so far uncrypted) connection
+        // Initialize the (so far unencrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
         if (!connection_p)
             return;
@@ -560,6 +560,10 @@ namespace networking
             lock_guard<mutex> lck{activeConnections_m};
             activeConnections[clientId] = unique_ptr<SocketType, SocketDeleter>{connection_p};
         }
+
+        // Send small message marking an established connection
+        // TODO: If failed?
+        sendMsg(clientId, "+++++ Established connection +++++");
 
         // Vectors of running work handlers and their status flags
         vector<thread> workHandlers;
