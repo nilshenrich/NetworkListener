@@ -562,8 +562,32 @@ namespace networking
         }
 
         // Send small message marking an established connection
-        // TODO: If failed?
-        writeMsg(clientId, "+++++ Established connection +++++");
+        // TODO: Message shorter (One byte)
+        // TODO: Define message in NetworkDefines.h
+        if (!writeMsg(clientId, "+++++ Established connection +++++"))
+        {
+#ifdef DEVELOP
+            cerr << typeid(this).name() << "::" << __func__ << ": Failed to send message to client marking this connection to be established " << clientId << endl;
+#endif // DEVELOP
+
+            {
+                lock_guard<mutex> lck{activeConnections_m};
+
+                // Deinitialize the connection
+                connectionDeinit(connection_p);
+
+                // Block the connection from being used anymore
+                shutdown(clientId, SHUT_RDWR);
+
+                // Remove connection from active connections
+                activeConnections.erase(clientId);
+            }
+
+            // Close the connection
+            close(clientId);
+
+            return;
+        }
 
         // Vectors of running work handlers and their status flags
         vector<thread> workHandlers;
@@ -573,7 +597,7 @@ namespace networking
         string buffer;
         while (1)
         {
-            // Wait for new incoming message (iplemented in derived classes)
+            // Wait for new incoming message (implemented in derived classes)
             // If message is empty string, the connection is broken
             string msg{readMsg(connection_p)};
             if (msg.empty())
