@@ -563,7 +563,7 @@ namespace networking
 
         // Send small message marking an established connection
         // TODO: If failed?
-        sendMsg(clientId, "+++++ Established connection +++++");
+        writeMsg(clientId, "+++++ Established connection +++++");
 
         // Vectors of running work handlers and their status flags
         vector<thread> workHandlers;
