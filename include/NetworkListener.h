@@ -97,7 +97,7 @@ namespace networking
     class NetworkListener
     {
     public:
-        NetworkListener(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
+        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
         virtual ~NetworkListener() {}
 
         /**
