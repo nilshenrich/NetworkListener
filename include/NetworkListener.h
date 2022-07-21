@@ -26,6 +26,7 @@
 #include <cstring>
 #include <exception>
 #include <limits>
+#include <atomic>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -63,10 +64,11 @@ namespace networking
      * @brief Class to manage running flag in threds.
      *
      */
+    using RunningFlag = std::atomic_bool;
     class NetworkListener_running_manager
     {
     public:
-        NetworkListener_running_manager(bool &flag) : flag{flag}
+        NetworkListener_running_manager(RunningFlag &flag) : flag{flag}
         {
             flag = true;
         }
@@ -76,7 +78,7 @@ namespace networking
         }
 
     private:
-        bool &flag;
+        RunningFlag &flag;
 
         // Delete default constructor
         NetworkListener_running_manager() = delete;
@@ -240,7 +242,7 @@ namespace networking
          *
          * @param clientId
          */
-        void listenerReceive(const int clientId, bool *const recRunning_p);
+        void listenerReceive(const int clientId, RunningFlag *const recRunning_p);
 
         // Socket address for the listener
         struct sockaddr_in socketAddress
@@ -255,7 +257,7 @@ namespace networking
 
         // All receiving threads (One per connected client) and their running status
         std::map<int, std::thread> recHandlers{};
-        std::map<int, std::unique_ptr<bool>> recHandlersRunning{};
+        std::map<int, std::unique_ptr<RunningFlag>> recHandlersRunning{};
 
         // Flag to indicate if the listener is running
         bool running{false};
@@ -498,7 +500,7 @@ namespace networking
 #endif // DEVELOP
 
             // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
-            unique_ptr<bool> recRunning{new bool{true}};
+            unique_ptr<RunningFlag> recRunning{new RunningFlag{true}};
             thread rec_t{&NetworkListener::listenerReceive, this, newConnection, recRunning.get()};
 
             // Get all finished receive handlers
@@ -543,7 +545,7 @@ namespace networking
     }
 
     template <class SocketType, class SocketDeleter>
-    void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clientId, bool *const recRunning_p)
+    void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clientId, RunningFlag *const recRunning_p)
     {
         using namespace std;
 
@@ -589,7 +591,7 @@ namespace networking
 
         // Vectors of running work handlers and their status flags
         vector<thread> workHandlers;
-        vector<unique_ptr<bool>> workHandlersRunning;
+        vector<unique_ptr<RunningFlag>> workHandlersRunning;
 
         // Read incoming messages from this connection as long as the connection is active
         string buffer;
@@ -657,8 +659,8 @@ namespace networking
 #endif // DEVELOP
 
                 // Run code to handle the message
-                unique_ptr<bool> workRunning{new bool{true}};
-                thread work_t{[this, clientId](bool *const workRunning_p, string buffer)
+                unique_ptr<RunningFlag> workRunning{new RunningFlag{true}};
+                thread work_t{[this, clientId](RunningFlag *const workRunning_p, string buffer)
                               {
                                   // Mark Thread as running
                                   NetworkListener_running_manager running_mgr{*workRunning_p};
