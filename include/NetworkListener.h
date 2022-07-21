@@ -36,7 +36,7 @@
 namespace networking
 {
     /**
-     * @brief Expeption class for the NetworkListener class.
+     * @brief Exception class for the NetworkListener class.
      */
     class NetworkListener_error : public std::exception
     {
@@ -61,7 +61,7 @@ namespace networking
     };
 
     /**
-     * @brief Class to manage running flag in threds.
+     * @brief Class to manage running flag in threads.
      *
      */
     using RunningFlag = std::atomic_bool;
@@ -89,8 +89,8 @@ namespace networking
      * @brief Template class for the NetworkListener class.
      * A usable server class must be derived from this class with specific socket type (int for unencrypted TCP, SSL for TLS).
      *
-     * @tparam SocketType
-     * @tparam SocketDeleter
+     * @param SocketType
+     * @param SocketDeleter
      */
     template <class SocketType, class SocketDeleter = std::default_delete<SocketType>>
     class NetworkListener
@@ -160,7 +160,7 @@ namespace networking
                          const char *const pathToPrivKey) = 0;
 
         /**
-         * @brief Initializes a new connetion just after accepting it on unencrypted TCP level.
+         * @brief Initializes a new connection just after accepting it on unencrypted TCP level.
          * The returned socket is used to communicate with the client.
          * This method is abstract and must be implemented by derived classes.
          *
@@ -170,7 +170,7 @@ namespace networking
         virtual SocketType *connectionInit(const int clientId) = 0;
 
         /**
-         * @brief Deinitializes a connection just before closing it.
+         * @brief Deinitialize a connection just before closing it.
          * This method is abstract and must be implemented by derived classes.
          *
          * @param socket
@@ -272,7 +272,7 @@ namespace networking
     };
 
     // ============================== Implementation of non-abstract methods. ==============================
-    // ====================== Must be in header file beccause of the template class. =======================
+    // ====================== Must be in header file because of the template class. =======================
 
     template <class SocketType, class SocketDeleter>
     int NetworkListener<SocketType, SocketDeleter>::start(
