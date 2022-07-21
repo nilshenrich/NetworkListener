@@ -260,7 +260,7 @@ namespace networking
         std::map<int, std::unique_ptr<RunningFlag>> recHandlersRunning{};
 
         // Flag to indicate if the listener is running
-        bool running{false};
+        RunningFlag running{false};
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER;
