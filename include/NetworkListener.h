@@ -68,10 +68,7 @@ namespace networking
     class NetworkListener_running_manager
     {
     public:
-        NetworkListener_running_manager(RunningFlag &flag) : flag{flag}
-        {
-            flag = true;
-        }
+        NetworkListener_running_manager(RunningFlag &flag) : flag{flag} {}
         virtual ~NetworkListener_running_manager()
         {
             flag = false;
