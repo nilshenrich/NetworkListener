@@ -116,6 +116,19 @@ int TlsServer::init(const char *const pathToCaCert,
 
 SSL *TlsServer::connectionInit(const int clientId)
 {
+    // Set allowed TLS cipher suites (Only TLSv1.3)
+    if (!SSL_CTX_set_ciphersuites(serverContext.get(), "TLS_AES_256_GCM_SHA384"))
+    {
+#ifdef DEVELOP
+        cerr << typeid(this).name() << "::" << __func__ << ": Error when setting TLS cipher suites" << endl;
+#endif // DEVELOP
+
+        shutdown(clientId, SHUT_RDWR);
+        close(clientId);
+
+        return nullptr;
+    }
+
     // Create new TLS channel
     // Close connection and return nullptr if it fails
     SSL *tlsSocket{SSL_new(serverContext.get())};
