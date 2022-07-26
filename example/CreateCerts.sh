@@ -31,14 +31,16 @@ mkdir ${currentDir}/keys/server/
 mkdir ${currentDir}/keys/client/
 
 # Create self-signed CA certificate and key
-openssl req -x509 -newkey rsa:4096 -days 365 -nodes -sha512 -utf8 \
-    -keyout ${currentDir}/keys/ca/ca_key.pem \
+openssl ecparam -name secp521r1 -genkey -noout -out ${currentDir}/keys/ca/ca_key.pem
+openssl req -new -x509 -days 365 -sha512 -utf8 \
+    -key ${currentDir}/keys/ca/ca_key.pem \
     -out ${currentDir}/keys/ca/ca_cert.pem \
     -subj "/C=${C}/ST=${ST}/L=${L}/O=Networking/OU=Networking.Authority/CN=localhost"
 
 # Create server private key and certificate signing request and sign it with the CA
-openssl req -newkey rsa:4096 -nodes -sha512 -utf8 \
-    -keyout ${currentDir}/keys/server/server_key.pem \
+openssl ecparam -name secp521r1 -genkey -noout -out ${currentDir}/keys/server/server_key.pem
+openssl req -new -sha512 -utf8 \
+    -key ${currentDir}/keys/server/server_key.pem \
     -out ${currentDir}/keys/server/server_req.csr \
     -subj "/C=${C}/ST=${ST}/L=${L}/O=Networking/OU=Networking.Server/CN=localhost"
 openssl x509 -req -days 365 \
@@ -49,8 +51,9 @@ openssl x509 -req -days 365 \
     -out ${currentDir}/keys/server/server_cert.pem
 
 # Create client private key and certificate signing request and sign it with the CA
-openssl req -newkey rsa:4096 -nodes -sha512 -utf8 \
-    -keyout ${currentDir}/keys/client/client_key.pem \
+openssl ecparam -name secp521r1 -genkey -noout -out ${currentDir}/keys/client/client_key.pem
+openssl req -new -sha512 -utf8 \
+    -key ${currentDir}/keys/client/client_key.pem \
     -out ${currentDir}/keys/client/client_req.csr \
     -subj "/C=${C}/ST=${ST}/L=${L}/O=Networking/OU=Networking.Client/CN=localhost"
 openssl x509 -req -days 365 \
