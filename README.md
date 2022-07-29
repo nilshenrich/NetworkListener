@@ -67,7 +67,7 @@ As already mentioned in [General explanation](#general-explanation), this projec
     sudo make install
     ```
 
-1. (optional) In some systems the library paths need to be updated before **libnetworkListenerTcp** and **libnetworkListenerTcp** can be used. So if you get an error like
+1. (optional) In some systems the library paths need to be updated before **libnetworkListenerTcp** and **libnetworkListenerTls** can be used. So if you get an error like
 
     ```console
     ./example: error while loading shared libraries: libnetworkListenerTcp.so.1: cannot open shared object file: No such file or directory
