@@ -6,8 +6,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project name
-project(networkListenerTcp VERSION 1.0 DESCRIPTION "Listener for TCP")
-project(networkListenerTls VERSION 1.0 DESCRIPTION "Listener for TLS")
+project(networkListenerTcp VERSION 1.2 DESCRIPTION "Listener for TCP")
+project(networkListenerTls VERSION 1.2 DESCRIPTION "Listener for TLS")
 
 # Include standard directories
 include(GNUInstallDirs)

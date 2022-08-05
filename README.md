@@ -22,8 +22,8 @@ The compatible client can be found [here](https://github.com/nilshenrich/Network
 
 This project contains installable C++ libraries for a server (listener) on TCP level. A client can connect to the server and data can be sent in both directions.
 
-This package contains two libraries: **libnetworkListenerTcp** and **libnetworkListenerTcp**.\
-As the names say, **libnetworkListenerTcp** creates a simple TCP server with no security. The **libnetworkListenerTcp** creates a server on TLS level. This means, an established connection is encrypted with the latest compatible TLS version and a client is forced to authenticate itself.
+This package contains two libraries: **libnetworkListenerTcp** and **libnetworkListenerTls**.\
+As the names say, **libnetworkListenerTcp** creates a simple TCP server with no security. The **libnetworkListenerTls** creates a server on TLS level. This means, an established connection is encrypted with the latest compatible TLS version and a client is forced to authenticate itself.
 
 ### Specifications
 
@@ -67,7 +67,7 @@ As already mentioned in [General explanation](#general-explanation), this projec
     sudo make install
     ```
 
-1. (optional) In some systems the library paths need to be updated before **libnetworkListenerTcp** and **libnetworkListenerTcp** can be used. So if you get an error like
+1. (optional) In some systems the library paths need to be updated before **libnetworkListenerTcp** and **libnetworkListenerTls** can be used. So if you get an error like
 
     ```console
     ./example: error while loading shared libraries: libnetworkListenerTcp.so.1: cannot open shared object file: No such file or directory

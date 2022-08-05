@@ -26,6 +26,7 @@
 #include <cstring>
 #include <exception>
 #include <limits>
+#include <atomic>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -35,7 +36,7 @@
 namespace networking
 {
     /**
-     * @brief Expeption class for the NetworkListener class.
+     * @brief Exception class for the NetworkListener class.
      */
     class NetworkListener_error : public std::exception
     {
@@ -60,23 +61,21 @@ namespace networking
     };
 
     /**
-     * @brief Class to manage running flag in threds.
+     * @brief Class to manage running flag in threads.
      *
      */
+    using RunningFlag = std::atomic_bool;
     class NetworkListener_running_manager
     {
     public:
-        NetworkListener_running_manager(bool &flag) : flag{flag}
-        {
-            flag = true;
-        }
+        NetworkListener_running_manager(RunningFlag &flag) : flag{flag} {}
         virtual ~NetworkListener_running_manager()
         {
             flag = false;
         }
 
     private:
-        bool &flag;
+        RunningFlag &flag;
 
         // Delete default constructor
         NetworkListener_running_manager() = delete;
@@ -90,14 +89,14 @@ namespace networking
      * @brief Template class for the NetworkListener class.
      * A usable server class must be derived from this class with specific socket type (int for unencrypted TCP, SSL for TLS).
      *
-     * @tparam SocketType
-     * @tparam SocketDeleter
+     * @param SocketType
+     * @param SocketDeleter
      */
     template <class SocketType, class SocketDeleter = std::default_delete<SocketType>>
     class NetworkListener
     {
     public:
-        NetworkListener(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
+        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
         virtual ~NetworkListener() {}
 
         /**
@@ -161,7 +160,7 @@ namespace networking
                          const char *const pathToPrivKey) = 0;
 
         /**
-         * @brief Initializes a new connetion just after accepting it on unencrypted TCP level.
+         * @brief Initializes a new connection just after accepting it on unencrypted TCP level.
          * The returned socket is used to communicate with the client.
          * This method is abstract and must be implemented by derived classes.
          *
@@ -171,7 +170,7 @@ namespace networking
         virtual SocketType *connectionInit(const int clientId) = 0;
 
         /**
-         * @brief Deinitializes a connection just before closing it.
+         * @brief Deinitialize a connection just before closing it.
          * This method is abstract and must be implemented by derived classes.
          *
          * @param socket
@@ -240,7 +239,7 @@ namespace networking
          *
          * @param clientId
          */
-        void listenerReceive(const int clientId, bool *const recRunning_p);
+        void listenerReceive(const int clientId, RunningFlag *const recRunning_p);
 
         // Socket address for the listener
         struct sockaddr_in socketAddress
@@ -255,10 +254,10 @@ namespace networking
 
         // All receiving threads (One per connected client) and their running status
         std::map<int, std::thread> recHandlers{};
-        std::map<int, std::unique_ptr<bool>> recHandlersRunning{};
+        std::map<int, std::unique_ptr<RunningFlag>> recHandlersRunning{};
 
         // Flag to indicate if the listener is running
-        bool running{false};
+        RunningFlag running{false};
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER;
@@ -273,7 +272,7 @@ namespace networking
     };
 
     // ============================== Implementation of non-abstract methods. ==============================
-    // ====================== Must be in header file beccause of the template class. =======================
+    // ====================== Must be in header file because of the template class. =======================
 
     template <class SocketType, class SocketDeleter>
     int NetworkListener<SocketType, SocketDeleter>::start(
@@ -498,7 +497,7 @@ namespace networking
 #endif // DEVELOP
 
             // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
-            unique_ptr<bool> recRunning{new bool{true}};
+            unique_ptr<RunningFlag> recRunning{new RunningFlag{true}};
             thread rec_t{&NetworkListener::listenerReceive, this, newConnection, recRunning.get()};
 
             // Get all finished receive handlers
@@ -543,14 +542,14 @@ namespace networking
     }
 
     template <class SocketType, class SocketDeleter>
-    void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clientId, bool *const recRunning_p)
+    void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clientId, RunningFlag *const recRunning_p)
     {
         using namespace std;
 
         // Mark Thread as running (Add running flag and connect to handler)
         NetworkListener_running_manager running_mgr{*recRunning_p};
 
-        // Initialize the (so far uncrypted) connection
+        // Initialize the (so far unencrypted) connection
         SocketType *connection_p{connectionInit(clientId)};
         if (!connection_p)
             return;
@@ -561,15 +560,41 @@ namespace networking
             activeConnections[clientId] = unique_ptr<SocketType, SocketDeleter>{connection_p};
         }
 
+        // Send small message marking an established connection
+        if (!writeMsg(clientId, string{1, DELIMITER}))
+        {
+#ifdef DEVELOP
+            cerr << typeid(this).name() << "::" << __func__ << ": Failed to send message to client marking this connection to be established " << clientId << endl;
+#endif // DEVELOP
+
+            {
+                lock_guard<mutex> lck{activeConnections_m};
+
+                // Deinitialize the connection
+                connectionDeinit(connection_p);
+
+                // Block the connection from being used anymore
+                shutdown(clientId, SHUT_RDWR);
+
+                // Remove connection from active connections
+                activeConnections.erase(clientId);
+            }
+
+            // Close the connection
+            close(clientId);
+
+            return;
+        }
+
         // Vectors of running work handlers and their status flags
         vector<thread> workHandlers;
-        vector<unique_ptr<bool>> workHandlersRunning;
+        vector<unique_ptr<RunningFlag>> workHandlersRunning;
 
         // Read incoming messages from this connection as long as the connection is active
         string buffer;
         while (1)
         {
-            // Wait for new incoming message (iplemented in derived classes)
+            // Wait for new incoming message (implemented in derived classes)
             // If message is empty string, the connection is broken
             string msg{readMsg(connection_p)};
             if (msg.empty())
@@ -631,8 +656,8 @@ namespace networking
 #endif // DEVELOP
 
                 // Run code to handle the message
-                unique_ptr<bool> workRunning{new bool{true}};
-                thread work_t{[this, clientId](bool *const workRunning_p, string buffer)
+                unique_ptr<RunningFlag> workRunning{new RunningFlag{true}};
+                thread work_t{[this, clientId](RunningFlag *const workRunning_p, string buffer)
                               {
                                   // Mark Thread as running
                                   NetworkListener_running_manager running_mgr{*workRunning_p};

@@ -31,7 +31,7 @@ namespace networking
    class TlsServer : public NetworkListener<SSL, NetworkListener_SSL_Deleter>
    {
    public:
-      TlsServer(char delimiter = '\n');
+      TlsServer(char delimiter = '\n', size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
       virtual ~TlsServer();
 
       /**

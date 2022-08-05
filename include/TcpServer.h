@@ -19,7 +19,7 @@ namespace networking
    class TcpServer : public NetworkListener<int>
    {
    public:
-      TcpServer(char delimiter = '\n');
+      TcpServer(char delimiter = '\n', size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
       virtual ~TcpServer();
 
       /**
