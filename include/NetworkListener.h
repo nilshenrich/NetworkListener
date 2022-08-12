@@ -521,12 +521,13 @@ namespace networking
             recHandlersRunning[newConnection] = move(recRunning);
         }
 
-        // Close all active connections
+        // Abort receiving for all active connections by shutting down the read channel
+        // Complete shutdown and close is done in receive threads
         {
             lock_guard<mutex> lck{activeConnections_m};
             for (const auto &it : activeConnections)
             {
-                shutdown(it.first, SHUT_RDWR);
+                shutdown(it.first, SHUT_RD);
 
 #ifdef DEVELOP
                 cout << typeid(this).name() << "::" << __func__ << ": Closed connection to client " << it.first << endl;
