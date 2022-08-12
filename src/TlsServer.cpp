@@ -210,7 +210,9 @@ string TlsServer::readMsg(SSL *socket)
     char buffer[MAXIMUM_RECEIVE_PACKAGE_SIZE]{0};
 
     // Wait for message from client
+    cout << "Server: Begin const int lenMsg{SSL_read(socket, buffer, MAXIMUM_RECEIVE_PACKAGE_SIZE)};" << endl;
     const int lenMsg{SSL_read(socket, buffer, MAXIMUM_RECEIVE_PACKAGE_SIZE)};
+    cout << "Server: End const int lenMsg{SSL_read(socket, buffer, MAXIMUM_RECEIVE_PACKAGE_SIZE)};" << endl;
 
     // Return message as string if it was received successfully (Return empty string if it fails)
     return string{buffer, 0 < lenMsg ? static_cast<size_t>(lenMsg) : 0UL};
@@ -219,7 +221,9 @@ string TlsServer::readMsg(SSL *socket)
 void TlsServer::connectionDeinit(SSL *socket)
 {
     // Shutdown TLS channel. Memory will be freed automatically on deletion
+    cout << "Server: Begin SSL_shutdown(socket);" << endl;
     SSL_shutdown(socket);
+    cout << "Server: End SSL_shutdown(socket);" << endl;
     return;
 }
 

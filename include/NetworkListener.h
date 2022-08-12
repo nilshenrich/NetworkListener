@@ -396,7 +396,9 @@ namespace networking
         running = false;
 
         // Block listening TCP socket to abort all reads
+        cout << "Server: Begin shutdown(tcpSocket, SHUT_RDWR)" << endl;
         int shut{shutdown(tcpSocket, SHUT_RDWR)};
+        cout << "Server: End shutdown(tcpSocket, SHUT_RDWR)" << endl;
 
         // Wait for the accept thread to finish
         if (accHandler.joinable())
@@ -407,7 +409,9 @@ namespace networking
             return;
 
         // Close listening TCP socket
+        cout << "Server: Begin close(tcpSocket);" << endl;
         close(tcpSocket);
+        cout << "Server: End close(tcpSocket);" << endl;
 
 #ifdef DEVELOP
         cout << typeid(this).name() << "::" << __func__ << ": Listener stopped" << endl;
@@ -526,7 +530,9 @@ namespace networking
             lock_guard<mutex> lck{activeConnections_m};
             for (const auto &it : activeConnections)
             {
+                cout << "Server: Begin shutdown(it.first, SHUT_RDWR);" << endl;
                 shutdown(it.first, SHUT_RDWR);
+                cout << "Server: End shutdown(it.first, SHUT_RDWR);" << endl;
 
 #ifdef DEVELOP
                 cout << typeid(this).name() << "::" << __func__ << ": Closed connection to client " << it.first << endl;
@@ -596,7 +602,9 @@ namespace networking
         {
             // Wait for new incoming message (implemented in derived classes)
             // If message is empty string, the connection is broken
+            cout << "Server: Begin string msg{readMsg(connection_p)};" << endl;
             string msg{readMsg(connection_p)};
+            cout << "Server: End string msg{readMsg(connection_p)};" << endl;
             if (msg.empty())
             {
 #ifdef DEVELOP
@@ -607,20 +615,30 @@ namespace networking
                     lock_guard<mutex> lck{activeConnections_m};
 
                     // Deinitialize the connection
+                    cout << "Server: Begin connectionDeinit(connection_p);" << endl;
                     connectionDeinit(connection_p);
+                    cout << "Server: End connectionDeinit(connection_p);" << endl;
 
                     // Block the connection from being used anymore
+                    cout << "Server: Begin shutdown(clientId, SHUT_RDWR);" << endl;
                     shutdown(clientId, SHUT_RDWR);
+                    cout << "Server: End shutdown(clientId, SHUT_RDWR);" << endl;
 
                     // Remove connection from active connections
+                    cout << "Server: Begin activeConnections.erase(clientId);" << endl;
                     activeConnections.erase(clientId);
+                    cout << "Server: End activeConnections.erase(clientId);" << endl;
                 }
 
                 // Run code to handle the closed connection
+                cout << "begin workOnClosed(clientId);" << endl;
                 workOnClosed(clientId);
+                cout << "begin workOnClosed(clientId);" << endl;
 
                 // Close the connection
+                cout << "Server: Begin close(clientId);" << endl;
                 close(clientId);
+                cout << "Server: Begin close(clientId);" << endl;
 
                 // Wait for all work handlers to finish
                 for (auto &it : workHandlers)
