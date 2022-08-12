@@ -530,9 +530,9 @@ namespace networking
             lock_guard<mutex> lck{activeConnections_m};
             for (const auto &it : activeConnections)
             {
-                cout << "Server: Begin shutdown(it.first, SHUT_RDWR);" << endl;
-                shutdown(it.first, SHUT_RDWR);
-                cout << "Server: End shutdown(it.first, SHUT_RDWR);" << endl;
+                cout << "Server: Begin shutdown(it.first, SHUT_RD);" << endl;
+                shutdown(it.first, SHUT_RD);
+                cout << "Server: End shutdown(it.first, SHUT_RD);" << endl;
 
 #ifdef DEVELOP
                 cout << typeid(this).name() << "::" << __func__ << ": Closed connection to client " << it.first << endl;
