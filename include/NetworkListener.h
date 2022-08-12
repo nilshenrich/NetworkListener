@@ -521,7 +521,8 @@ namespace networking
             recHandlersRunning[newConnection] = move(recRunning);
         }
 
-        // Close all active connections
+        // Abort receiving for all active connections by shutting down the read channel
+        // Complete shutdown and close is done in receive threads
         {
             lock_guard<mutex> lck{activeConnections_m};
             for (const auto &it : activeConnections)
