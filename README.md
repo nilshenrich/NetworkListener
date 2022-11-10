@@ -4,6 +4,8 @@ Installable package to set up a server clients can connect to on TCP level and s
 
 The compatible client can be found [here](https://github.com/nilshenrich/NetworkClient)
 
+A test run can be found [here](https://github.com/nilshenrich/NetworkTester/actions)
+
 ## Table of contents
 
 1. [General explanation](#general-explanation)
@@ -16,7 +18,6 @@ The compatible client can be found [here](https://github.com/nilshenrich/Network
     1. [Run example](#run-example)
 1. [System requirements](#system-requirements)
 1. [Known issues](#known-issues)
-    1. [Pipe error](#pipe-error)
 
 ## General explanation
 
@@ -271,20 +272,4 @@ The installation process in this project is adapted to debian-based linux distri
 
 ## Known issues
 
-### [Pipe error](https://github.com/nilshenrich/NetworkListener/issues/7)
-
-When trying to start an instance derived from **TcpServer** or **TlsServer**, that is already running, the program runs into a pipe error, that exits the program with return code 141.
-
-To prevent a program exit, the signal **SIGPIPE** can be handled or ignored, but I will do my best to avoid this issue.
-
-```cpp
-// Ignore pipe error
-signal(SIGPIPE, SIG_IGN);
-
-// Handle pipe error using a custom handler function
-void sigpipe_handler(int)
-{
-    // Do some stuff to handle pipe error
-}
-signal(SIGPIPE, sigpipe_handler);
-```
+\<no known issues\>
