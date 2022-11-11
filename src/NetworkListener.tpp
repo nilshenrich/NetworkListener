@@ -145,30 +145,33 @@ bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, con
 {
     using namespace std;
 
-    // Check if message doesn't contain delimiter
-    if (msg.find(DELIMITER_FOR_FRAGMENTATION) != string::npos)
+    if (MESSAGE_FRAGMENTATION_ENABLED)
     {
+        // Check if message doesn't contain delimiter
+        if (msg.find(DELIMITER_FOR_FRAGMENTATION) != string::npos)
+        {
 #ifdef DEVELOP
-        cerr << typeid(this).name() << "::" << __func__ << ": Message contains delimiter" << endl;
+            cerr << typeid(this).name() << "::" << __func__ << ": Message contains delimiter" << endl;
 #endif // DEVELOP
 
-        return false;
-    }
+            return false;
+        }
 
-    // Check if message is too long
-    if (msg.length() > MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION)
-    {
+        // Check if message is too long
+        if (msg.length() > MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION)
+        {
 #ifdef DEVELOP
-        cerr << typeid(this).name() << "::" << __func__ << ": Message is too long" << endl;
+            cerr << typeid(this).name() << "::" << __func__ << ": Message is too long" << endl;
 #endif // DEVELOP
 
-        return false;
+            return false;
+        }
     }
 
     // Extend message with start and end characters and send it
     lock_guard<mutex> lck{activeConnections_m};
     if (activeConnections.find(clientId) != activeConnections.end())
-        return writeMsg(clientId, msg + string{DELIMITER_FOR_FRAGMENTATION});
+        return writeMsg(clientId, MESSAGE_FRAGMENTATION_ENABLED ? msg + string{DELIMITER_FOR_FRAGMENTATION} : msg);
 
 #ifdef DEVELOP
     cerr << typeid(this).name() << "::" << __func__ << ": Client " << clientId << " is not connected" << endl;
