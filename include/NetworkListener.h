@@ -98,9 +98,9 @@ namespace networking
          *
          * @param os
          */
-        NetworkListener(std::ostream &os) : DELIMITER_FOR_FRAGMENTATION{0},
+        NetworkListener(std::ostream &os) : CONTINUOUS_OUTPUT_STREAM{os},
+                                            DELIMITER_FOR_FRAGMENTATION{0},
                                             MAXIMUM_MESSAGE_LENGTH{0},
-                                            CONTINUOUS_OUTPUT_STREAM{os},
                                             MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
@@ -109,9 +109,9 @@ namespace networking
          * @param delimiter
          * @param messageMaxLen
          */
-        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER_FOR_FRAGMENTATION{delimiter},
+        NetworkListener(char delimiter, size_t messageMaxLen) : CONTINUOUS_OUTPUT_STREAM{std::cout},
+                                                                DELIMITER_FOR_FRAGMENTATION{delimiter},
                                                                 MAXIMUM_MESSAGE_LENGTH{messageMaxLen},
-                                                                CONTINUOUS_OUTPUT_STREAM{std::cout},
                                                                 MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
@@ -279,14 +279,14 @@ namespace networking
         // Flag to indicate if the listener is running
         RunningFlag running{false};
 
+        // Out stream to forward continuous input stream to
+        std::ostream &CONTINUOUS_OUTPUT_STREAM;
+
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER_FOR_FRAGMENTATION;
 
         // Maximum message length (incoming and outgoing) (default is 2³² - 2 = 4294967294)
         const size_t MAXIMUM_MESSAGE_LENGTH;
-
-        // Out stream to forward continuous input stream to
-        const std::ostream &CONTINUOUS_OUTPUT_STREAM;
 
         // Flag if messages shall be fragmented
         const bool MESSAGE_FRAGMENTATION_ENABLED;
