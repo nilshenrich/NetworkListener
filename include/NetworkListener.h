@@ -99,14 +99,20 @@ namespace networking
          * @param delimiter
          * @param messageMaxLen
          */
-        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER_FOR_FRAGMENTATION{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen}, CONTINUOUS_OUTPUT_STREAM{std::cout} {}
+        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                                MAXIMUM_MESSAGE_LENGTH{messageMaxLen},
+                                                                CONTINUOUS_OUTPUT_STREAM{std::cout},
+                                                                MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
          * @brief Constructor for continuous stream forwarding
          *
          * @param os
          */
-        NetworkListener(std::ostream &os) : DELIMITER_FOR_FRAGMENTATION{0}, MAXIMUM_MESSAGE_LENGTH{0}, CONTINUOUS_OUTPUT_STREAM{os} {}
+        NetworkListener(std::ostream &os) : DELIMITER_FOR_FRAGMENTATION{0},
+                                            MAXIMUM_MESSAGE_LENGTH{0},
+                                            CONTINUOUS_OUTPUT_STREAM{os},
+                                            MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Destructor
@@ -281,6 +287,9 @@ namespace networking
 
         // Out stream to forward continuous input stream to
         const std::ostream &CONTINUOUS_OUTPUT_STREAM;
+
+        // Flag if messages shall be fragmented
+        const bool MESSAGE_FRAGMENTATION_ENABLED;
 
         // Disallow copy
         NetworkListener() = delete;
