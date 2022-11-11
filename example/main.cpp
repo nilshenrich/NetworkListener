@@ -10,6 +10,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <chrono>
 
 #include "NetworkListener/TcpServer.h"
@@ -18,13 +19,17 @@
 using namespace std;
 using namespace networking;
 
-// Example class that derives from TcpServer and TlsServer
-class ExampleServer : private TcpServer, private TlsServer
+// File streams for continuous stream forwarding
+ofstream StreamForward_tcp{"output_tcp.txt"};
+ofstream StreamForward_tls{"output_tls.txt"};
+
+// Example class for fragmented message transfer that derives from TcpServer and TlsServer
+class ExampleServer_fragmented : private TcpServer, private TlsServer
 {
 public:
     // Constructor and destructor
-    ExampleServer() : TcpServer{'\x00'}, TlsServer{'\x00'} {}
-    virtual ~ExampleServer() {}
+    ExampleServer_fragmented() : TcpServer{'\x00'}, TlsServer{'\x00'} {}
+    virtual ~ExampleServer_fragmented() {}
 
     // Start TCP and TLS server
     int start()
@@ -80,28 +85,93 @@ private:
     }
 };
 
+// Example class for continuous message transfer that derives from TcpServer and TlsServer
+class ExampleServer_continuous : private TcpServer, private TlsServer
+{
+public:
+    // Constructor and destructor
+    ExampleServer_continuous() : TcpServer{StreamForward_tcp}, TlsServer{StreamForward_tls} {}
+    virtual ~ExampleServer_continuous() {}
+
+    // Start TCP and TLS server
+    int start()
+    {
+        // Start TCP server
+        int start_tcp{TcpServer::start(8081)};
+
+        // Start TLS server
+        int start_tls{TlsServer::start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem")};
+
+        // Return code (2 bytes): High byte: TLS, low byte: TCP
+        return (start_tls << 8) | start_tcp;
+    }
+
+    // Stop TCP and TLS server
+    void stop()
+    {
+        // Stop TCP server
+        TcpServer::stop();
+
+        // Stop TLS server
+        TlsServer::stop();
+
+        return;
+    }
+
+private:
+    // Override abstract methods
+    void workOnMessage_TcpServer(const int tcpClientId, const std::string tcpMsgFromClient)
+    {
+        cerr << "Work on TCP message should never be executed" << endl;
+        return;
+    }
+
+    void workOnClosed_TcpServer(const int tcpClientId)
+    {
+        cerr << "Work on TCP close should never be executed" << endl;
+        return;
+    }
+
+    void workOnMessage_TlsServer(const int tlsClientId, const std::string tlsMsgFromClient)
+    {
+        cerr << "Work on TLS message should never be executed" << endl;
+        return;
+    }
+
+    void workOnClosed_TlsServer(const int tlsClientId)
+    {
+        cerr << "Work on TLS close should never be executed" << endl;
+        return;
+    }
+};
+
 int main()
 {
-    // Create server
-    ExampleServer server;
+    // Create servers
+    ExampleServer_fragmented server_fragmented;
+    ExampleServer_continuous server_continuous;
 
-    // Start server
-    int start{server.start()};
+    // Start servers
+    int start{server_fragmented.start() & server_continuous.start()};
     if (start)
     {
-        cerr << "Error when starting server: " << start << endl;
+        cerr << "Error when starting servers: " << start << endl;
         return start;
     }
 
-    cout << "Server started." << endl;
+    cout << "Servers started." << endl;
 
     // Wait for 10 seconds
     this_thread::sleep_for(10s);
 
-    // Stop server
-    server.stop();
+    // Stop servers
+    server_fragmented.stop();
+    server_continuous.stop();
 
-    cout << "Server stopped." << endl;
+    cout << "Servers stopped." << endl;
+
+    StreamForward_tcp.flush();
+    StreamForward_tls.flush();
 
     return 0;
 }
