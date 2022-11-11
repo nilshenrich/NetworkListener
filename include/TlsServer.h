@@ -31,7 +31,24 @@ namespace networking
    class TlsServer : public NetworkListener<SSL, NetworkListener_SSL_Deleter>
    {
    public:
-      TlsServer(char delimiter = '\n', size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+      /**
+       * @brief Constructor for continuous stream forwarding
+       *
+       * @param os
+       */
+      TlsServer(std::ostream &os = std::cout);
+
+      /**
+       * @brief Constructor for fragmented messages
+       *
+       * @param delimiter
+       * @param messageMaxLen
+       */
+      TlsServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+
+      /**
+       * @brief Destructor
+       */
       virtual ~TlsServer();
 
       /**

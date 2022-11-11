@@ -6,8 +6,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project name
-project(networkListenerTcp VERSION 1.2 DESCRIPTION "Listener for TCP")
-project(networkListenerTls VERSION 1.2 DESCRIPTION "Listener for TLS")
+project(networkListenerTcp VERSION 2.0 DESCRIPTION "Listener for TCP")
+project(networkListenerTls VERSION 2.0 DESCRIPTION "Listener for TLS")
 
 # Include standard directories
 include(GNUInstallDirs)
@@ -37,13 +37,13 @@ target_link_options(networkListenerTls PUBLIC $<$<CONFIG:RELEASE>: -s>)
 # Use C++17 standard
 set_target_properties(networkListenerTcp PROPERTIES
     VERSION ${PROJECT_VERSION}
-    SOVERSION 1
+    SOVERSION 2
     PUBLIC_HEADER "include/TcpServer.h;include/NetworkListener.h;include/NetworkingDefines.h;include/NetworkListener.tpp"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)
 set_target_properties(networkListenerTls PROPERTIES
     VERSION ${PROJECT_VERSION}
-    SOVERSION 1
+    SOVERSION 2
     PUBLIC_HEADER "include/TlsServer.h;include/NetworkListener.h;include/NetworkingDefines.h;include/NetworkListener.tpp"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)

@@ -19,7 +19,24 @@ namespace networking
    class TcpServer : public NetworkListener<int>
    {
    public:
-      TcpServer(char delimiter = '\n', size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+      /**
+       * @brief Constructor for continuous stream forwarding
+       *
+       * @param os
+       */
+      TcpServer(std::ostream &os = std::cout);
+
+      /**
+       * @brief Constructor for fragmented messages
+       *
+       * @param delimiter
+       * @param messageMaxLen
+       */
+      TcpServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+
+      /**
+       * @brief Destructor
+       */
       virtual ~TcpServer();
 
       /**

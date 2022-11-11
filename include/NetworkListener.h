@@ -14,10 +14,7 @@
 #ifndef NETWORKLISTENER_H
 #define NETWORKLISTENER_H
 
-#ifdef DEVELOP
 #include <iostream>
-#endif // DEVELOP
-
 #include <string>
 #include <vector>
 #include <map>
@@ -96,7 +93,30 @@ namespace networking
     class NetworkListener
     {
     public:
-        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
+        /**
+         * @brief Constructor for continuous stream forwarding
+         *
+         * @param os
+         */
+        NetworkListener(std::ostream &os) : CONTINUOUS_OUTPUT_STREAM{os},
+                                            DELIMITER_FOR_FRAGMENTATION{0},
+                                            MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                            MESSAGE_FRAGMENTATION_ENABLED{false} {}
+
+        /**
+         * @brief Constructor for fragmented messages
+         *
+         * @param delimiter
+         * @param messageMaxLen
+         */
+        NetworkListener(char delimiter, size_t messageMaxLen) : CONTINUOUS_OUTPUT_STREAM{std::cout},
+                                                                DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                                MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
+                                                                MESSAGE_FRAGMENTATION_ENABLED{true} {}
+
+        /**
+         * @brief Destructor
+         */
         virtual ~NetworkListener() {}
 
         /**
@@ -259,11 +279,17 @@ namespace networking
         // Flag to indicate if the listener is running
         RunningFlag running{false};
 
+        // Out stream to forward continuous input stream to
+        std::ostream &CONTINUOUS_OUTPUT_STREAM;
+
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
-        const char DELIMITER;
+        const char DELIMITER_FOR_FRAGMENTATION;
 
         // Maximum message length (incoming and outgoing) (default is 2³² - 2 = 4294967294)
-        const size_t MAXIMUM_MESSAGE_LENGTH;
+        const size_t MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION;
+
+        // Flag if messages shall be fragmented
+        const bool MESSAGE_FRAGMENTATION_ENABLED;
 
         // Disallow copy
         NetworkListener() = delete;
