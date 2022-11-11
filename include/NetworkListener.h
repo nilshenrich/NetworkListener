@@ -94,6 +94,16 @@ namespace networking
     {
     public:
         /**
+         * @brief Constructor for continuous stream forwarding
+         *
+         * @param os
+         */
+        NetworkListener(std::ostream &os) : DELIMITER_FOR_FRAGMENTATION{0},
+                                            MAXIMUM_MESSAGE_LENGTH{0},
+                                            CONTINUOUS_OUTPUT_STREAM{os},
+                                            MESSAGE_FRAGMENTATION_ENABLED{false} {}
+
+        /**
          * @brief Constructor for fragmented messages
          *
          * @param delimiter
@@ -103,16 +113,6 @@ namespace networking
                                                                 MAXIMUM_MESSAGE_LENGTH{messageMaxLen},
                                                                 CONTINUOUS_OUTPUT_STREAM{std::cout},
                                                                 MESSAGE_FRAGMENTATION_ENABLED{true} {}
-
-        /**
-         * @brief Constructor for continuous stream forwarding
-         *
-         * @param os
-         */
-        NetworkListener(std::ostream &os) : DELIMITER_FOR_FRAGMENTATION{0},
-                                            MAXIMUM_MESSAGE_LENGTH{0},
-                                            CONTINUOUS_OUTPUT_STREAM{os},
-                                            MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Destructor
