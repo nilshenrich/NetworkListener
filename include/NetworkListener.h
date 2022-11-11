@@ -274,7 +274,7 @@ namespace networking
     // ============================== Implementation of non-abstract methods. ==============================
     // ====================== Must be in header file because of the template class. =======================
 
-#include "../src/NetworkListener.tpp"
+#include "NetworkListener.tpp"
 }
 
 #endif // NETWORKLISTENER_H

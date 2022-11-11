@@ -38,13 +38,13 @@ target_link_options(networkListenerTls PUBLIC $<$<CONFIG:RELEASE>: -s>)
 set_target_properties(networkListenerTcp PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
-    PUBLIC_HEADER "include/TcpServer.h;include/NetworkListener.h;include/NetworkingDefines.h"
+    PUBLIC_HEADER "include/TcpServer.h;include/NetworkListener.h;include/NetworkingDefines.h;include/NetworkListener.tpp"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)
 set_target_properties(networkListenerTls PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
-    PUBLIC_HEADER "include/TlsServer.h;include/NetworkListener.h;include/NetworkingDefines.h"
+    PUBLIC_HEADER "include/TlsServer.h;include/NetworkListener.h;include/NetworkingDefines.h;include/NetworkListener.tpp"
     CXX_STANDARD 17
     CMAKE_CXX_STANDARD_REQUIRED True)
 
