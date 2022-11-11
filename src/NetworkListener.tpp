@@ -156,7 +156,7 @@ bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, con
     }
 
     // Check if message is too long
-    if (msg.length() > MAXIMUM_MESSAGE_LENGTH)
+    if (msg.length() > MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION)
     {
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Message is too long" << endl;
@@ -367,7 +367,7 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
                 delimiter_pos = msg.find(DELIMITER_FOR_FRAGMENTATION);
 
                 // Check if the message is too long
-                if (buffer.size() + msg_part.size() > MAXIMUM_MESSAGE_LENGTH)
+                if (buffer.size() + msg_part.size() > MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION)
                 {
 #ifdef DEVELOP
                     cerr << typeid(this).name() << "::" << __func__ << ": Message from client " << clientId << " is too long" << endl;

@@ -100,7 +100,7 @@ namespace networking
          */
         NetworkListener(std::ostream &os) : CONTINUOUS_OUTPUT_STREAM{os},
                                             DELIMITER_FOR_FRAGMENTATION{0},
-                                            MAXIMUM_MESSAGE_LENGTH{0},
+                                            MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
                                             MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
@@ -111,7 +111,7 @@ namespace networking
          */
         NetworkListener(char delimiter, size_t messageMaxLen) : CONTINUOUS_OUTPUT_STREAM{std::cout},
                                                                 DELIMITER_FOR_FRAGMENTATION{delimiter},
-                                                                MAXIMUM_MESSAGE_LENGTH{messageMaxLen},
+                                                                MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
                                                                 MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
@@ -286,7 +286,7 @@ namespace networking
         const char DELIMITER_FOR_FRAGMENTATION;
 
         // Maximum message length (incoming and outgoing) (default is 2³² - 2 = 4294967294)
-        const size_t MAXIMUM_MESSAGE_LENGTH;
+        const size_t MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION;
 
         // Flag if messages shall be fragmented
         const bool MESSAGE_FRAGMENTATION_ENABLED;
