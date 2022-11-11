@@ -146,7 +146,7 @@ bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, con
     using namespace std;
 
     // Check if message doesn't contain delimiter
-    if (msg.find(DELIMITER) != string::npos)
+    if (msg.find(DELIMITER_FOR_FRAGMENTATION) != string::npos)
     {
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Message contains delimiter" << endl;
@@ -168,7 +168,7 @@ bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, con
     // Extend message with start and end characters and send it
     lock_guard<mutex> lck{activeConnections_m};
     if (activeConnections.find(clientId) != activeConnections.end())
-        return writeMsg(clientId, msg + string{DELIMITER});
+        return writeMsg(clientId, msg + string{DELIMITER_FOR_FRAGMENTATION});
 
 #ifdef DEVELOP
     cerr << typeid(this).name() << "::" << __func__ << ": Client " << clientId << " is not connected" << endl;
@@ -286,7 +286,7 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     }
 
     // Send small message marking an established connection
-    if (!writeMsg(clientId, string{1, DELIMITER}))
+    if (!writeMsg(clientId, string{1, DELIMITER_FOR_FRAGMENTATION}))
     {
 #ifdef DEVELOP
         cerr << typeid(this).name() << "::" << __func__ << ": Failed to send message to client marking this connection to be established " << clientId << endl;
@@ -356,12 +356,12 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
 
         // Get raw message separated by delimiter
         // If delimiter is found, the message is split into two parts
-        size_t delimiter_pos{msg.find(DELIMITER)};
+        size_t delimiter_pos{msg.find(DELIMITER_FOR_FRAGMENTATION)};
         while (string::npos != delimiter_pos)
         {
             string msg_part{msg.substr(0, delimiter_pos)};
             msg = msg.substr(delimiter_pos + 1);
-            delimiter_pos = msg.find(DELIMITER);
+            delimiter_pos = msg.find(DELIMITER_FOR_FRAGMENTATION);
 
             // Check if the message is too long
             if (buffer.size() + msg_part.size() > MAXIMUM_MESSAGE_LENGTH)
