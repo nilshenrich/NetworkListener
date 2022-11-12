@@ -281,7 +281,7 @@ namespace networking
 
         // Pointer to a function that returns an out stream to forward incoming data to
         std::ostream (*generateNewForwardStream)(int);
-        std::map<int, std::ostream> CONTINUOUS_OUTPUT_STREAMS;
+        std::map<int, std::ostream> forwardStreams;
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER_FOR_FRAGMENTATION;
