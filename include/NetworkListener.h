@@ -98,10 +98,10 @@ namespace networking
          *
          * @param os
          */
-        NetworkListener(std::ostream &os) : CONTINUOUS_OUTPUT_STREAM{os},
-                                            DELIMITER_FOR_FRAGMENTATION{0},
-                                            MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
-                                            MESSAGE_FRAGMENTATION_ENABLED{false} {}
+        NetworkListener(std::ostream (*os)(int) = nullptr) : generateNewForwardStream{os},
+                                                             DELIMITER_FOR_FRAGMENTATION{0},
+                                                             MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                                             MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Constructor for fragmented messages
@@ -109,7 +109,7 @@ namespace networking
          * @param delimiter
          * @param messageMaxLen
          */
-        NetworkListener(char delimiter, size_t messageMaxLen) : CONTINUOUS_OUTPUT_STREAM{std::cout},
+        NetworkListener(char delimiter, size_t messageMaxLen) : generateNewForwardStream{nullptr},
                                                                 DELIMITER_FOR_FRAGMENTATION{delimiter},
                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
                                                                 MESSAGE_FRAGMENTATION_ENABLED{true} {}
@@ -279,8 +279,9 @@ namespace networking
         // Flag to indicate if the listener is running
         RunningFlag running{false};
 
-        // Out stream to forward continuous input stream to
-        std::ostream &CONTINUOUS_OUTPUT_STREAM;
+        // Pointer to a function that returns an out stream to forward incoming data to
+        std::ostream (*generateNewForwardStream)(int);
+        std::map<int, std::ostream> CONTINUOUS_OUTPUT_STREAMS;
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER_FOR_FRAGMENTATION;
