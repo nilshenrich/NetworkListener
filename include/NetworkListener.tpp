@@ -357,6 +357,9 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
             for (auto &it : workHandlers)
                 it.join();
 
+            // Remove forwarding stream
+            CONTINUOUS_OUTPUT_STREAMS.erase(clientId);
+
             return;
         }
 
