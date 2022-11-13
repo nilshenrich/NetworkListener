@@ -3,7 +3,7 @@
 using namespace networking;
 using namespace std;
 
-TlsServer::TlsServer(ostream &os) : NetworkListener{os} {}
+TlsServer::TlsServer(std::function<std::ostream *(int)> os) : NetworkListener{os} {}
 TlsServer::TlsServer(char delimiter, size_t messageMaxLen) : NetworkListener{delimiter, messageMaxLen} {}
 
 TlsServer::~TlsServer()
