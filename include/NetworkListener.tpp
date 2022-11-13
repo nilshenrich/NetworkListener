@@ -315,7 +315,7 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     }
 
     // Create forwarding stream for this connection
-    forwardStreams[clientId] = (*generateNewForwardStream)(clientId);
+    forwardStreams[clientId] = unique_ptr<ostream>{generateNewForwardStream(clientId)};
 
     // Vectors of running work handlers and their status flags
     vector<thread> workHandlers;
@@ -430,7 +430,7 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
         else
         {
             // Just forward incoming message to output stream
-            forwardStreams[clientId] << msg;
+            *forwardStreams[clientId].get() << msg;
         }
     }
 }
