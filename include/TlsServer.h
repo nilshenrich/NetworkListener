@@ -36,7 +36,7 @@ namespace networking
        *
        * @param os
        */
-      TlsServer(std::ostream *(*os)(int) = nullptr);
+      TlsServer(std::function<std::ostream *(int)> os = nullptr);
 
       /**
        * @brief Constructor for fragmented messages

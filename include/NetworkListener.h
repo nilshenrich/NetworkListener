@@ -24,6 +24,7 @@
 #include <exception>
 #include <limits>
 #include <atomic>
+#include <functional>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -98,10 +99,10 @@ namespace networking
          *
          * @param os
          */
-        NetworkListener(std::ostream *(*os)(int)) : generateNewForwardStream{os},
-                                                    DELIMITER_FOR_FRAGMENTATION{0},
-                                                    MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
-                                                    MESSAGE_FRAGMENTATION_ENABLED{false} {}
+        NetworkListener(std::function<std::ostream *(int)> os) : generateNewForwardStream{os},
+                                                                 DELIMITER_FOR_FRAGMENTATION{0},
+                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                                                 MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Constructor for fragmented messages
@@ -280,7 +281,7 @@ namespace networking
         RunningFlag running{false};
 
         // Pointer to a function that returns an out stream to forward incoming data to
-        std::ostream *(*generateNewForwardStream)(int);
+        std::function<std::ostream *(int)> generateNewForwardStream;
         std::map<int, std::unique_ptr<std::ostream>> forwardStreams;
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
