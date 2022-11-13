@@ -3,7 +3,7 @@
 using namespace networking;
 using namespace std;
 
-TcpServer::TcpServer(ostream &os) : NetworkListener{os} {}
+TcpServer::TcpServer(std::ostream *(*os)(int)) : NetworkListener{os} {}
 TcpServer::TcpServer(char delimiter, size_t messageMaxLen) : NetworkListener{delimiter, messageMaxLen} {}
 
 TcpServer::~TcpServer()

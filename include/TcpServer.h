@@ -24,7 +24,7 @@ namespace networking
        *
        * @param os
        */
-      TcpServer(std::ostream &os = std::cout);
+      TcpServer(std::ostream *(*os)(int) = nullptr);
 
       /**
        * @brief Constructor for fragmented messages
