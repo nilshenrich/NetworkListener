@@ -315,6 +315,7 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     }
 
     // Create forwarding stream for this connection
+    // TODO: Double free may be an issue if object is freed on creators side
     forwardStreams[clientId] = unique_ptr<ostream>{generateNewForwardStream(clientId)};
 
     // Vectors of running work handlers and their status flags
