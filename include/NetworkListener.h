@@ -102,12 +102,12 @@ namespace networking
          * @param workOnClosed  Working function on closed connection
          */
         NetworkListener(std::function<std::ostream *(int)> os,
-                        std::function<void(const int)> workOnClosed = nullptr) : generateNewForwardStream{os},
-                                                                                 workOnMessage{nullptr},
-                                                                                 workOnClosed{workOnClosed},
-                                                                                 DELIMITER_FOR_FRAGMENTATION{0},
-                                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
-                                                                                 MESSAGE_FRAGMENTATION_ENABLED{false} {}
+                        std::function<void(const int)> workOnClosed) : generateNewForwardStream{os},
+                                                                       workOnMessage{nullptr},
+                                                                       workOnClosed{workOnClosed},
+                                                                       DELIMITER_FOR_FRAGMENTATION{0},
+                                                                       MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                                                       MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Constructor for fragmented messages
@@ -118,13 +118,13 @@ namespace networking
          * @param workOnClosed  Working function on closed connection
          */
         NetworkListener(char delimiter, size_t messageMaxLen,
-                        std::function<void(const int, const std::string)> workOnMessage = nullptr,
-                        std::function<void(const int)> workOnClosed = nullptr) : generateNewForwardStream{nullptr},
-                                                                                 workOnMessage{workOnMessage},
-                                                                                 workOnClosed{workOnClosed},
-                                                                                 DELIMITER_FOR_FRAGMENTATION{delimiter},
-                                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
-                                                                                 MESSAGE_FRAGMENTATION_ENABLED{true} {}
+                        std::function<void(const int, const std::string)> workOnMessage,
+                        std::function<void(const int)> workOnClosed) : generateNewForwardStream{nullptr},
+                                                                       workOnMessage{workOnMessage},
+                                                                       workOnClosed{workOnClosed},
+                                                                       DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                                       MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
+                                                                       MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
          * @brief Destructor
