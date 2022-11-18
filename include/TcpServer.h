@@ -55,25 +55,6 @@ namespace networking
        */
       virtual ~TcpServer();
 
-      /**
-       * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
-       * This method must be passed to constructor.
-       *
-       * @param tcpClientId
-       * @param tcpMsgFromClient
-       */
-      // TODO: No need to name with _TcpServer
-      std::function<void(const int, const std::string)> workOnMessage_TcpServer;
-
-      /**
-       * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
-       * This method must be passed to constructor.
-       *
-       * @param tcpClientId
-       */
-      // TODO: No need to name with _TcpServer
-      std::function<void(const int)> workOnClosed_TcpServer;
-
    private:
       /**
        * @brief Initialize the server (Do nothing. Just return 0).

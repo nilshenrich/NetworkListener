@@ -68,25 +68,6 @@ namespace networking
       virtual ~TlsServer();
 
       /**
-       * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
-       * This method must be implemented in derived classes.
-       *
-       * @param tlsClientId
-       * @param tlsMsgFromClient
-       */
-      // TODO: No need to name with _TcpServer
-      std::function<void(const int, const std::string)> workOnMessage_TlsServer;
-
-      /**
-       * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
-       * This method must be implemented in derived classes.
-       *
-       * @param tlsClientId
-       */
-      // TODO: No need to name with _TcpServer
-      std::function<void(const int)> workOnClosed_TlsServer;
-
-      /**
        * @brief Get specific subject part as string of the certificate of a specific connected client (Identified by its TCP ID).
        *
        * @param clientId
