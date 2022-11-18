@@ -142,10 +142,10 @@ namespace networking
          * @param pathToPrivKey
          * @return int (NETWORKLISTENER_START_OK if successful, see NetworkListenerDefines.h for other return values)
          */
-        virtual int start(const int port,
-                          const char *const pathToCaCert = nullptr,
-                          const char *const pathToCert = nullptr,
-                          const char *const pathToPrivKey = nullptr);
+        int start(const int port,
+                  const char *const pathToCaCert = nullptr,
+                  const char *const pathToCert = nullptr,
+                  const char *const pathToPrivKey = nullptr);
 
         /**
          * @brief Stops the listener.
