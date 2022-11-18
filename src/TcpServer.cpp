@@ -5,26 +5,18 @@ using namespace std;
 
 TcpServer::TcpServer(function<ostream *(int)> os,
                      function<void(const int, const string)> workOnMessage_TcpServer,
-                     function<void(const int)> workOnClosed_TcpServer) : NetworkListener{os},
-                                                                         workOnMessage_TcpServer{workOnMessage_TcpServer},
-                                                                         workOnClosed_TcpServer{workOnClosed_TcpServer} {}
+                     function<void(const int)> workOnClosed_TcpServer) : NetworkListener{os, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
 template <class T>
 TcpServer::TcpServer(ostream *(T::*os)(int),
                      void (T::*workOnMessage_TcpServer)(const int, const string),
-                     void (T::*workOnClosed_TcpServer)(const int)) : NetworkListener{os},
-                                                                     workOnMessage_TcpServer{workOnMessage_TcpServer},
-                                                                     workOnClosed_TcpServer{workOnClosed_TcpServer} {}
+                     void (T::*workOnClosed_TcpServer)(const int)) : NetworkListener{os, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
 TcpServer::TcpServer(char delimiter, size_t messageMaxLen,
                      function<void(const int, const string)> workOnMessage_TcpServer,
-                     function<void(const int)> workOnClosed_TcpServer) : NetworkListener{delimiter, messageMaxLen},
-                                                                         workOnMessage_TcpServer{workOnMessage_TcpServer},
-                                                                         workOnClosed_TcpServer{workOnClosed_TcpServer} {}
+                     function<void(const int)> workOnClosed_TcpServer) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
 template <class T>
 TcpServer::TcpServer(char delimiter, size_t messageMaxLen,
                      void (T::*workOnMessage_TcpServer)(const int, const string),
-                     void (T::*workOnClosed_TcpServer)(const int)) : NetworkListener{delimiter, messageMaxLen},
-                                                                     workOnMessage_TcpServer{workOnMessage_TcpServer},
-                                                                     workOnClosed_TcpServer{workOnClosed_TcpServer} {}
+                     void (T::*workOnClosed_TcpServer)(const int)) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
 
 TcpServer::~TcpServer()
 {
@@ -67,17 +59,5 @@ string TcpServer::readMsg(int *socket)
 
 void TcpServer::connectionDeinit(int *)
 {
-    return;
-}
-
-void TcpServer::workOnMessage(const int clientId, const string msg)
-{
-    workOnMessage_TcpServer(clientId, move(msg));
-    return;
-}
-
-void TcpServer::workOnClosed(const int clientId)
-{
-    workOnClosed_TcpServer(clientId);
     return;
 }

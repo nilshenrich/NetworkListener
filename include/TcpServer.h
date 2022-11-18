@@ -120,21 +120,6 @@ namespace networking
        */
       bool writeMsg(const int clientId, const std::string &msg) override final;
 
-      /**
-       * @brief Just call specific handler method for TCP server (workOnMessage_TcpServer).
-       *
-       * @param clientId
-       * @param msg
-       */
-      void workOnMessage(const int clientId, const std::string msg) override final;
-
-      /**
-       * @brief Just call specific handler method for TCP server (workOnClosed_TcpServer).
-       *
-       * @param clientId
-       */
-      void workOnClosed(const int clientId) override final;
-
       // Disallow copy
       TcpServer(const TcpServer &) = delete;
       TcpServer &operator=(const TcpServer &) = delete;

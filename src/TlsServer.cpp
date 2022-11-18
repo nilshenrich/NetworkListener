@@ -5,26 +5,18 @@ using namespace std;
 
 TlsServer::TlsServer(function<ostream *(int)> os,
                      function<void(const int, const string)> workOnMessage_TlsServer,
-                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{os},
-                                                                         workOnMessage_TlsServer{workOnMessage_TlsServer},
-                                                                         workOnClosed_TlsServer{workOnClosed_TlsServer} {}
+                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{os, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
 template <class T>
 TlsServer::TlsServer(ostream *(T::*os)(int),
                      void (T::*workOnMessage_TlsServer)(const int, const string),
-                     void (T::*workOnClosed_TlsServer)(const int)) : NetworkListener{os},
-                                                                     workOnMessage_TlsServer{workOnMessage_TlsServer},
-                                                                     workOnClosed_TlsServer{workOnClosed_TlsServer} {}
+                     void (T::*workOnClosed_TlsServer)(const int)) : NetworkListener{os, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
 TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
                      function<void(const int, const string)> workOnMessage_TlsServer,
-                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{delimiter, messageMaxLen},
-                                                                         workOnMessage_TlsServer{workOnMessage_TlsServer},
-                                                                         workOnClosed_TlsServer{workOnClosed_TlsServer} {}
+                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
 template <class T>
 TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
                      void (T::*workOnMessage_TlsServer)(const int, const string),
-                     void (T::*workOnClosed_TlsServer)(const int)) : NetworkListener{delimiter, messageMaxLen},
-                                                                     workOnMessage_TlsServer{workOnMessage_TlsServer},
-                                                                     workOnClosed_TlsServer{workOnClosed_TlsServer} {}
+                     void (T::*workOnClosed_TlsServer)(const int)) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
 
 TlsServer::~TlsServer()
 {
@@ -241,18 +233,6 @@ void TlsServer::connectionDeinit(SSL *socket)
 {
     // Shutdown TLS channel. Memory will be freed automatically on deletion
     SSL_shutdown(socket);
-    return;
-}
-
-void TlsServer::workOnMessage(const int clientId, const string msg)
-{
-    workOnMessage_TlsServer(clientId, move(msg));
-    return;
-}
-
-void TlsServer::workOnClosed(const int clientId)
-{
-    workOnClosed_TlsServer(clientId);
     return;
 }
 

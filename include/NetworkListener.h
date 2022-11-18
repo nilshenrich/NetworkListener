@@ -100,10 +100,15 @@ namespace networking
          *
          * @param os
          */
-        NetworkListener(std::function<std::ostream *(int)> os) : generateNewForwardStream{os},
-                                                                 DELIMITER_FOR_FRAGMENTATION{0},
-                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
-                                                                 MESSAGE_FRAGMENTATION_ENABLED{false} {}
+        // TODO: Forwarding mode doesn't need a work function
+        NetworkListener(std::function<std::ostream *(int)> os,
+                        std::function<void(const int, const std::string)> workMsg = nullptr,
+                        std::function<void(const int)> workClosed = nullptr) : generateNewForwardStream{os},
+                                                                               workOnMessage{workMsg},
+                                                                               workOnClosed{workClosed},
+                                                                               DELIMITER_FOR_FRAGMENTATION{0},
+                                                                               MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                                                               MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Constructor for fragmented messages
@@ -111,10 +116,14 @@ namespace networking
          * @param delimiter
          * @param messageMaxLen
          */
-        NetworkListener(char delimiter, size_t messageMaxLen) : generateNewForwardStream{nullptr},
-                                                                DELIMITER_FOR_FRAGMENTATION{delimiter},
-                                                                MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
-                                                                MESSAGE_FRAGMENTATION_ENABLED{true} {}
+        NetworkListener(char delimiter, size_t messageMaxLen,
+                        std::function<void(const int, const std::string)> workMsg = nullptr,
+                        std::function<void(const int)> workClosed = nullptr) : generateNewForwardStream{nullptr},
+                                                                               workOnMessage{workMsg},
+                                                                               workOnClosed{workClosed},
+                                                                               DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                                               MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
+                                                                               MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
          * @brief Destructor
@@ -220,25 +229,6 @@ namespace networking
          */
         virtual bool writeMsg(const int clientId, const std::string &msg) = 0;
 
-        /**
-         * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
-         * This method is called automatically as soon as a new message is received.
-         * This method is abstract and must be implemented by derived classes.
-         *
-         * @param clientId
-         * @param msg
-         */
-        virtual void workOnMessage(const int clientId, const std::string msg) = 0;
-
-        /**
-         * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
-         * This method is called automatically as soon as a connection is closed or broken.
-         * This method is abstract and must be implemented by derived classes.
-         *
-         * @param clientId
-         */
-        virtual void workOnClosed(const int clientId) = 0;
-
         // Map to store all active connections with their identifying TCP ID
         std::map<int, std::unique_ptr<SocketType, SocketDeleter>> activeConnections{};
 
@@ -284,6 +274,10 @@ namespace networking
         // Pointer to a function that returns an out stream to forward incoming data to
         std::function<std::ostream *(int)> generateNewForwardStream;
         std::map<int, std::unique_ptr<std::ostream>> forwardStreams;
+
+        // Pointer to worker functions on incoming message (for fragmentation mode only) or closed connection
+        std::function<void(const int, const std::string)> workOnMessage;
+        std::function<void(const int)> workOnClosed;
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER_FOR_FRAGMENTATION;

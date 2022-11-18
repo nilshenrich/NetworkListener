@@ -146,21 +146,6 @@ namespace networking
        */
       bool writeMsg(const int clientId, const std::string &msg) override final;
 
-      /**
-       * @brief Just call specific handler method for TLS server (workOnMessage_TlsServer).
-       *
-       * @param clientId
-       * @param msg
-       */
-      void workOnMessage(const int clientId, const std::string msg) override final;
-
-      /**
-       * @brief Just call specific handler method for TLS server (workOnClosed_TlsServer).
-       *
-       * @param clientId
-       */
-      void workOnClosed(const int clientId) override final;
-
       // TLS context of the server
       std::unique_ptr<SSL_CTX, void (*)(SSL_CTX *)> serverContext{nullptr, SSL_CTX_free};
 
