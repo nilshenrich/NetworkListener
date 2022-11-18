@@ -28,7 +28,7 @@ namespace networking
       }
    };
 
-   class TlsServer : public NetworkListener<SSL, NetworkListener_SSL_Deleter>
+   class TlsServer : private NetworkListener<SSL, NetworkListener_SSL_Deleter>
    {
    public:
       /**

@@ -16,7 +16,7 @@
 
 namespace networking
 {
-   class TcpServer : public NetworkListener<int>
+   class TcpServer : private NetworkListener<int>
    {
    public:
       /**
