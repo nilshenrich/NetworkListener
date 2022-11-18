@@ -98,32 +98,33 @@ namespace networking
         /**
          * @brief Constructor for continuous stream forwarding
          *
-         * @param os
+         * @param os            Function to create forwarding stream based on client ID
+         * @param workOnClosed  Working function on closed connection
          */
-        // TODO: Forwarding mode doesn't need a work function
         NetworkListener(std::function<std::ostream *(int)> os,
-                        std::function<void(const int, const std::string)> workMsg = nullptr,
-                        std::function<void(const int)> workClosed = nullptr) : generateNewForwardStream{os},
-                                                                               workOnMessage{workMsg},
-                                                                               workOnClosed{workClosed},
-                                                                               DELIMITER_FOR_FRAGMENTATION{0},
-                                                                               MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
-                                                                               MESSAGE_FRAGMENTATION_ENABLED{false} {}
+                        std::function<void(const int)> workOnClosed = nullptr) : generateNewForwardStream{os},
+                                                                                 workOnMessage{nullptr},
+                                                                                 workOnClosed{workOnClosed},
+                                                                                 DELIMITER_FOR_FRAGMENTATION{0},
+                                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                                                                 MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Constructor for fragmented messages
          *
-         * @param delimiter
-         * @param messageMaxLen
+         * @param delimiter     Character to split messages on
+         * @param messageMaxLen Maximum message length
+         * @param workOnMessage Working function on incoming message
+         * @param workOnClosed  Working function on closed connection
          */
         NetworkListener(char delimiter, size_t messageMaxLen,
-                        std::function<void(const int, const std::string)> workMsg = nullptr,
-                        std::function<void(const int)> workClosed = nullptr) : generateNewForwardStream{nullptr},
-                                                                               workOnMessage{workMsg},
-                                                                               workOnClosed{workClosed},
-                                                                               DELIMITER_FOR_FRAGMENTATION{delimiter},
-                                                                               MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
-                                                                               MESSAGE_FRAGMENTATION_ENABLED{true} {}
+                        std::function<void(const int, const std::string)> workOnMessage = nullptr,
+                        std::function<void(const int)> workOnClosed = nullptr) : generateNewForwardStream{nullptr},
+                                                                                 workOnMessage{workOnMessage},
+                                                                                 workOnClosed{workOnClosed},
+                                                                                 DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
+                                                                                 MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
          * @brief Destructor

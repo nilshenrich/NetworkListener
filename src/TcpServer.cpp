@@ -4,12 +4,10 @@ using namespace networking;
 using namespace std;
 
 TcpServer::TcpServer(function<ostream *(int)> os,
-                     function<void(const int, const string)> workOnMessage,
-                     function<void(const int)> workOnClosed) : NetworkListener{os, workOnMessage, workOnClosed} {}
+                     function<void(const int)> workOnClosed) : NetworkListener{os, workOnClosed} {}
 template <class T>
 TcpServer::TcpServer(ostream *(T::*os)(int),
-                     void (T::*workOnMessage)(const int, const string),
-                     void (T::*workOnClosed)(const int)) : NetworkListener{os, workOnMessage, workOnClosed} {}
+                     void (T::*workOnClosed)(const int)) : NetworkListener{os, workOnClosed} {}
 TcpServer::TcpServer(char delimiter, size_t messageMaxLen,
                      function<void(const int, const string)> workOnMessage,
                      function<void(const int)> workOnClosed) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}

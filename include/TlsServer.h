@@ -34,25 +34,22 @@ namespace networking
       /**
        * @brief Constructor for continuous stream forwarding
        *
-       * @param os                        function to create forwarding stream based on client ID
-       * @param workOnMessage   working function on incoming message
-       * @param workOnClosed    working function on closed connection
+       * @param os            Function to create forwarding stream based on client ID
+       * @param workOnClosed  Working function on closed connection
        */
       TlsServer(std::function<std::ostream *(int)> os = nullptr,
-                std::function<void(const int, const std::string)> workOnMessage = nullptr,
                 std::function<void(const int)> workOnClosed = nullptr);
       template <class T>
       TlsServer(std::ostream *(T::*os)(int) = nullptr,
-                void (T::*workOnMessage)(const int, const std::string) = nullptr,
                 void (T::*workOnClosed)(const int) = nullptr);
 
       /**
        * @brief Constructor for fragmented messages
        *
-       * @param delimiter                 Character to split messages on
-       * @param messageMaxLen             maximum message length
-       * @param workOnMessage   working function on incoming message
-       * @param workOnClosed    working function on closed connection
+       * @param delimiter     Character to split messages on
+       * @param messageMaxLen Maximum message length
+       * @param workOnMessage Working function on incoming message
+       * @param workOnClosed  Working function on closed connection
        */
       TlsServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1,
                 std::function<void(const int, const std::string)> workOnMessage = nullptr,
