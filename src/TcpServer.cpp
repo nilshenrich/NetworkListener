@@ -4,19 +4,19 @@ using namespace networking;
 using namespace std;
 
 TcpServer::TcpServer(function<ostream *(int)> os,
-                     function<void(const int, const string)> workOnMessage_TcpServer,
-                     function<void(const int)> workOnClosed_TcpServer) : NetworkListener{os, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
+                     function<void(const int, const string)> workOnMessage,
+                     function<void(const int)> workOnClosed) : NetworkListener{os, workOnMessage, workOnClosed} {}
 template <class T>
 TcpServer::TcpServer(ostream *(T::*os)(int),
-                     void (T::*workOnMessage_TcpServer)(const int, const string),
-                     void (T::*workOnClosed_TcpServer)(const int)) : NetworkListener{os, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
+                     void (T::*workOnMessage)(const int, const string),
+                     void (T::*workOnClosed)(const int)) : NetworkListener{os, workOnMessage, workOnClosed} {}
 TcpServer::TcpServer(char delimiter, size_t messageMaxLen,
-                     function<void(const int, const string)> workOnMessage_TcpServer,
-                     function<void(const int)> workOnClosed_TcpServer) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
+                     function<void(const int, const string)> workOnMessage,
+                     function<void(const int)> workOnClosed) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
 template <class T>
 TcpServer::TcpServer(char delimiter, size_t messageMaxLen,
-                     void (T::*workOnMessage_TcpServer)(const int, const string),
-                     void (T::*workOnClosed_TcpServer)(const int)) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TcpServer, workOnClosed_TcpServer} {}
+                     void (T::*workOnMessage)(const int, const string),
+                     void (T::*workOnClosed)(const int)) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
 
 TcpServer::~TcpServer()
 {

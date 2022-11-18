@@ -4,19 +4,19 @@ using namespace networking;
 using namespace std;
 
 TlsServer::TlsServer(function<ostream *(int)> os,
-                     function<void(const int, const string)> workOnMessage_TlsServer,
-                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{os, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
+                     function<void(const int, const string)> workOnMessage,
+                     function<void(const int)> workOnClosed) : NetworkListener{os, workOnMessage, workOnClosed} {}
 template <class T>
 TlsServer::TlsServer(ostream *(T::*os)(int),
-                     void (T::*workOnMessage_TlsServer)(const int, const string),
-                     void (T::*workOnClosed_TlsServer)(const int)) : NetworkListener{os, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
+                     void (T::*workOnMessage)(const int, const string),
+                     void (T::*workOnClosed)(const int)) : NetworkListener{os, workOnMessage, workOnClosed} {}
 TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
-                     function<void(const int, const string)> workOnMessage_TlsServer,
-                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
+                     function<void(const int, const string)> workOnMessage,
+                     function<void(const int)> workOnClosed) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
 template <class T>
 TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
-                     void (T::*workOnMessage_TlsServer)(const int, const string),
-                     void (T::*workOnClosed_TlsServer)(const int)) : NetworkListener{delimiter, messageMaxLen, workOnMessage_TlsServer, workOnClosed_TlsServer} {}
+                     void (T::*workOnMessage)(const int, const string),
+                     void (T::*workOnClosed)(const int)) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
 
 TlsServer::~TlsServer()
 {
