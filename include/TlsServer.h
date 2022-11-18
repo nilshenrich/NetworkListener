@@ -39,9 +39,6 @@ namespace networking
        */
       TlsServer(std::function<std::ostream *(int)> os = nullptr,
                 std::function<void(const int)> workOnClosed = nullptr);
-      template <class T>
-      TlsServer(std::ostream *(T::*os)(int) = nullptr,
-                void (T::*workOnClosed)(const int) = nullptr);
 
       /**
        * @brief Constructor for fragmented messages
@@ -54,10 +51,6 @@ namespace networking
       TlsServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1,
                 std::function<void(const int, const std::string)> workOnMessage = nullptr,
                 std::function<void(const int)> workOnClosed = nullptr);
-      template <class T>
-      TlsServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1,
-                void (T::*workOnMessage)(const int, const std::string) = nullptr,
-                void (T::*workOnClosed)(const int) = nullptr);
 
       /**
        * @brief Destructor

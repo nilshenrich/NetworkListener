@@ -5,16 +5,9 @@ using namespace std;
 
 TlsServer::TlsServer(function<ostream *(int)> os,
                      function<void(const int)> workOnClosed) : NetworkListener{os, workOnClosed} {}
-template <class T>
-TlsServer::TlsServer(ostream *(T::*os)(int),
-                     void (T::*workOnClosed)(const int)) : NetworkListener{os, workOnClosed} {}
 TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
                      function<void(const int, const string)> workOnMessage,
                      function<void(const int)> workOnClosed) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
-template <class T>
-TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
-                     void (T::*workOnMessage)(const int, const string),
-                     void (T::*workOnClosed)(const int)) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
 
 TlsServer::~TlsServer()
 {
