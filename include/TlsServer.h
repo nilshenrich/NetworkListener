@@ -36,7 +36,9 @@ namespace networking
        *
        * @param os
        */
-      TlsServer(std::function<std::ostream *(int)> os = nullptr);
+      TlsServer(std::function<std::ostream *(int)> os = nullptr,
+                std::function<void(const int, const std::string)> workOnMessage_TlsServer = nullptr,
+                std::function<void(const int)> workOnClosed_TlsServer = nullptr);
 
       /**
        * @brief Constructor for fragmented messages
@@ -44,7 +46,9 @@ namespace networking
        * @param delimiter
        * @param messageMaxLen
        */
-      TlsServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+      TlsServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1,
+                std::function<void(const int, const std::string)> workOnMessage_TlsServer = nullptr,
+                std::function<void(const int)> workOnClosed_TlsServer = nullptr);
 
       /**
        * @brief Destructor
@@ -58,7 +62,8 @@ namespace networking
        * @param tlsClientId
        * @param tlsMsgFromClient
        */
-      virtual void workOnMessage_TlsServer(const int tlsClientId, const std::string tlsMsgFromClient) = 0;
+      // TODO: No need to name with _TcpServer
+      std::function<void(const int, const std::string)> workOnMessage_TlsServer;
 
       /**
        * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
@@ -66,7 +71,8 @@ namespace networking
        *
        * @param tlsClientId
        */
-      virtual void workOnClosed_TlsServer(const int tlsClientId) = 0;
+      // TODO: No need to name with _TcpServer
+      std::function<void(const int)> workOnClosed_TlsServer;
 
       /**
        * @brief Get specific subject part as string of the certificate of a specific connected client (Identified by its TCP ID).

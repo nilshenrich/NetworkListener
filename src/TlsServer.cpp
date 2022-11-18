@@ -3,8 +3,12 @@
 using namespace networking;
 using namespace std;
 
-TlsServer::TlsServer(std::function<std::ostream *(int)> os) : NetworkListener{os} {}
-TlsServer::TlsServer(char delimiter, size_t messageMaxLen) : NetworkListener{delimiter, messageMaxLen} {}
+TlsServer::TlsServer(function<ostream *(int)> os,
+                     function<void(const int, const string)> workOnMessage_TlsServer,
+                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{os}, workOnMessage_TlsServer{workOnMessage_TlsServer}, workOnClosed_TlsServer{workOnClosed_TlsServer} {}
+TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
+                     function<void(const int, const string)> workOnMessage_TlsServer,
+                     function<void(const int)> workOnClosed_TlsServer) : NetworkListener{delimiter, messageMaxLen}, workOnMessage_TlsServer{workOnMessage_TlsServer}, workOnClosed_TlsServer{workOnClosed_TlsServer} {}
 
 TlsServer::~TlsServer()
 {
@@ -185,7 +189,7 @@ SSL *TlsServer::connectionInit(const int clientId)
     return tlsSocket;
 }
 
-bool TlsServer::writeMsg(const int clientId, const std::string &msg)
+bool TlsServer::writeMsg(const int clientId, const string &msg)
 {
     // Convert string to char array (Do here for peromance reasons)
     const char *const buffer = msg.c_str();

@@ -24,7 +24,9 @@ namespace networking
        *
        * @param os
        */
-      TcpServer(std::function<std::ostream *(int)> os = nullptr);
+      TcpServer(std::function<std::ostream *(int)> os = nullptr,
+                std::function<void(const int, const std::string)> workOnMessage_TcpServer = nullptr,
+                std::function<void(const int)> workOnClosed_TcpServer = nullptr);
 
       /**
        * @brief Constructor for fragmented messages
@@ -32,7 +34,9 @@ namespace networking
        * @param delimiter
        * @param messageMaxLen
        */
-      TcpServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+      TcpServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1,
+                std::function<void(const int, const std::string)> workOnMessage_TcpServer = nullptr,
+                std::function<void(const int)> workOnClosed_TcpServer = nullptr);
 
       /**
        * @brief Destructor
@@ -41,20 +45,22 @@ namespace networking
 
       /**
        * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
-       * This method must be implemented in derived classes.
+       * This method must be passed to constructor.
        *
        * @param tcpClientId
        * @param tcpMsgFromClient
        */
-      virtual void workOnMessage_TcpServer(const int tcpClientId, const std::string tcpMsgFromClient) = 0;
+      // TODO: No need to name with _TcpServer
+      std::function<void(const int, const std::string)> workOnMessage_TcpServer;
 
       /**
        * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
-       * This method must be implemented in derived classes.
+       * This method must be passed to constructor.
        *
        * @param tcpClientId
        */
-      virtual void workOnClosed_TcpServer(const int tcpClientId) = 0;
+      // TODO: No need to name with _TcpServer
+      std::function<void(const int)> workOnClosed_TcpServer;
 
    private:
       /**
@@ -62,9 +68,9 @@ namespace networking
        *
        * @return int
        */
-      int init(const char *const,
-               const char *const,
-               const char *const) override final;
+      int init(const char *const = nullptr,
+               const char *const = nullptr,
+               const char *const = nullptr) override final;
 
       /**
        * @brief Initialize connection to a specific client (Identified by its TCP ID) (Do nothing. Just return pointer to TCP ID).
