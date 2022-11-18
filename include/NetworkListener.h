@@ -24,6 +24,7 @@
 #include <exception>
 #include <limits>
 #include <atomic>
+#include <memory>
 #include <functional>
 #include <netinet/in.h>
 #include <arpa/inet.h>
