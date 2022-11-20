@@ -49,7 +49,7 @@ namespace networking
         }
 
     private:
-        std::string msg;
+        const std::string msg;
 
         // Delete default constructor
         NetworkListener_error() = delete;
@@ -158,7 +158,7 @@ namespace networking
          * @param clientId
          * @return std::string
          */
-        std::string getClientIp(const int clientId);
+        std::string getClientIp(const int clientId) const;
 
         /**
          * @brief Return if listener is running

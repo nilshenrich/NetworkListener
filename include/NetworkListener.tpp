@@ -181,7 +181,7 @@ bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, con
 }
 
 template <class SocketType, class SocketDeleter>
-std::string NetworkListener<SocketType, SocketDeleter>::getClientIp(const int clientId)
+std::string NetworkListener<SocketType, SocketDeleter>::getClientIp(const int clientId) const
 {
     using namespace std;
 
