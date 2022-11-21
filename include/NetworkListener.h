@@ -163,6 +163,13 @@ namespace networking
         bool sendMsg(const int clientId, const std::string &msg);
 
         /**
+         * @brief Get all connected clients identified by ID as list
+         *
+         * @return vector<int>
+         */
+        std::vector<int> getAllClientIds() const;
+
+        /**
          * @brief Get the IP address of a specific connected client (Identified by its TCP ID).
          *
          * @param clientId

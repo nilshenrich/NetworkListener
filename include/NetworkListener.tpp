@@ -181,6 +181,17 @@ bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, con
 }
 
 template <class SocketType, class SocketDeleter>
+std::vector<int> NetworkListener<SocketType, SocketDeleter>::getAllClientIds() const
+{
+    using namespace std;
+
+    vector<int> ret;
+    for (auto &v : activeConnections)
+        ret.push_back(v.first);
+    return ret;
+}
+
+template <class SocketType, class SocketDeleter>
 std::string NetworkListener<SocketType, SocketDeleter>::getClientIp(const int clientId) const
 {
     using namespace std;
