@@ -12,6 +12,8 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
+#include <limits>
+
 #include "NetworkListener.h"
 
 namespace networking

@@ -12,6 +12,7 @@
 #ifndef TLSSERVER_H
 #define TLSSERVER_H
 
+#include <limits>
 #include <openssl/ssl.h>
 
 #include "NetworkListener.h"

@@ -22,7 +22,6 @@
 #include <mutex>
 #include <cstring>
 #include <exception>
-#include <limits>
 #include <atomic>
 #include <memory>
 #include <functional>
