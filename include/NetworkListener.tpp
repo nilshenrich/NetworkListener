@@ -315,7 +315,8 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     }
 
     // Create forwarding stream for this connection
-    forwardStreams[clientId] = unique_ptr<ostream>{generateNewForwardStream(clientId)};
+    if (generateNewForwardStream)
+        forwardStreams[clientId] = unique_ptr<ostream>{generateNewForwardStream(clientId)};
 
     // Vectors of running work handlers and their status flags
     vector<thread> workHandlers;
@@ -348,7 +349,8 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
             }
 
             // Run code to handle the closed connection
-            workOnClosed(clientId);
+            if (workOnClosed)
+                workOnClosed(clientId);
 
             // Close the connection
             close(clientId);
@@ -358,7 +360,8 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
                 it.join();
 
             // Remove forwarding stream
-            forwardStreams.erase(clientId);
+            if (forwardStreams.find(clientId) != forwardStreams.end())
+                forwardStreams.erase(clientId);
 
             return;
         }
@@ -400,7 +403,8 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
                                   NetworkListener_running_manager running_mgr{*workRunning_p};
 
                                   // Run code to handle the incoming message
-                                  workOnMessage(clientId, move(buffer));
+                                  if (workOnMessage)
+                                      workOnMessage(clientId, move(buffer));
 
                                   return;
                               },
@@ -430,7 +434,8 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
         else
         {
             // Just forward incoming message to output stream
-            *forwardStreams[clientId].get() << msg;
+            if (forwardStreams.find(clientId) != forwardStreams.end())
+                *forwardStreams[clientId].get() << msg;
         }
     }
 }
