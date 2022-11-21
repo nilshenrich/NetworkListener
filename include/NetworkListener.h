@@ -97,33 +97,34 @@ namespace networking
         /**
          * @brief Constructor for continuous stream forwarding
          *
-         * @param os            Function to create forwarding stream based on client ID
          * @param workOnClosed  Working function on closed connection
+         * @param os            Function to create forwarding stream based on client ID
          */
-        NetworkListener(std::function<std::ostream *(int)> os,
-                        std::function<void(const int)> workOnClosed) : generateNewForwardStream{os},
-                                                                       workOnMessage{nullptr},
-                                                                       workOnClosed{workOnClosed},
-                                                                       DELIMITER_FOR_FRAGMENTATION{0},
-                                                                       MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
-                                                                       MESSAGE_FRAGMENTATION_ENABLED{false} {}
+        NetworkListener(std::function<void(const int)> workOnClosed,
+                        std::function<std::ostream *(int)> os) : generateNewForwardStream{os},
+                                                                 workOnMessage{nullptr},
+                                                                 workOnClosed{workOnClosed},
+                                                                 DELIMITER_FOR_FRAGMENTATION{0},
+                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                                                 MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Constructor for fragmented messages
          *
          * @param delimiter     Character to split messages on
-         * @param messageMaxLen Maximum message length
          * @param workOnMessage Working function on incoming message
          * @param workOnClosed  Working function on closed connection
+         * @param messageMaxLen Maximum message length
          */
-        NetworkListener(char delimiter, size_t messageMaxLen,
+        NetworkListener(char delimiter,
                         std::function<void(const int, const std::string)> workOnMessage,
-                        std::function<void(const int)> workOnClosed) : generateNewForwardStream{nullptr},
-                                                                       workOnMessage{workOnMessage},
-                                                                       workOnClosed{workOnClosed},
-                                                                       DELIMITER_FOR_FRAGMENTATION{delimiter},
-                                                                       MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
-                                                                       MESSAGE_FRAGMENTATION_ENABLED{true} {}
+                        std::function<void(const int)> workOnClosed,
+                        size_t messageMaxLen) : generateNewForwardStream{nullptr},
+                                                workOnMessage{workOnMessage},
+                                                workOnClosed{workOnClosed},
+                                                DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
+                                                MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
          * @brief Destructor

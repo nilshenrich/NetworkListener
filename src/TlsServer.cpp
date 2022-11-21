@@ -3,11 +3,12 @@
 using namespace networking;
 using namespace std;
 
-TlsServer::TlsServer(function<ostream *(int)> os,
-                     function<void(const int)> workOnClosed) : NetworkListener{os, workOnClosed} {}
-TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
+TlsServer::TlsServer(function<void(const int)> workOnClosed,
+                     function<ostream *(int)> os) : NetworkListener{workOnClosed, os} {}
+TlsServer::TlsServer(char delimiter,
                      function<void(const int, const string)> workOnMessage,
-                     function<void(const int)> workOnClosed) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
+                     function<void(const int)> workOnClosed,
+                     size_t messageMaxLen) : NetworkListener{delimiter, workOnMessage, workOnClosed, messageMaxLen} {}
 
 TlsServer::~TlsServer()
 {
