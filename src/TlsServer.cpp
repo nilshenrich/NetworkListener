@@ -3,8 +3,11 @@
 using namespace networking;
 using namespace std;
 
-TlsServer::TlsServer(std::function<std::ostream *(int)> os) : NetworkListener{os} {}
-TlsServer::TlsServer(char delimiter, size_t messageMaxLen) : NetworkListener{delimiter, messageMaxLen} {}
+TlsServer::TlsServer(function<ostream *(int)> os,
+                     function<void(const int)> workOnClosed) : NetworkListener{os, workOnClosed} {}
+TlsServer::TlsServer(char delimiter, size_t messageMaxLen,
+                     function<void(const int, const string)> workOnMessage,
+                     function<void(const int)> workOnClosed) : NetworkListener{delimiter, messageMaxLen, workOnMessage, workOnClosed} {}
 
 TlsServer::~TlsServer()
 {
@@ -185,7 +188,7 @@ SSL *TlsServer::connectionInit(const int clientId)
     return tlsSocket;
 }
 
-bool TlsServer::writeMsg(const int clientId, const std::string &msg)
+bool TlsServer::writeMsg(const int clientId, const string &msg)
 {
     // Convert string to char array (Do here for peromance reasons)
     const char *const buffer = msg.c_str();
@@ -221,18 +224,6 @@ void TlsServer::connectionDeinit(SSL *socket)
 {
     // Shutdown TLS channel. Memory will be freed automatically on deletion
     SSL_shutdown(socket);
-    return;
-}
-
-void TlsServer::workOnMessage(const int clientId, const string msg)
-{
-    workOnMessage_TlsServer(clientId, move(msg));
-    return;
-}
-
-void TlsServer::workOnClosed(const int clientId)
-{
-    workOnClosed_TlsServer(clientId);
     return;
 }
 
