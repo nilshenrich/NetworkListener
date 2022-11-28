@@ -22,10 +22,10 @@ using namespace networking;
 
 // Global functions
 void tcp_fragmented_workOnMessage(int id, string msg) { cout << "Message from TCP client " << id << ": " << msg << endl; }
-ofstream *tcp_forwarding_messageStream(int id) { return new ofstream{"MessageStream_TCP_Client"s + to_string(id), ios::app}; }
+ofstream *tcp_forwarding_messageStream(int id) { return new ofstream{"MessageStream_TCP_Client"s + to_string(id)}; }
 void tcp_workOnClosed(int id) { cout << "Connection to TCP client " << id << " closed" << endl; }
 void tls_fragmented_workOnMessage(int id, string msg) { cout << "Message from TLS client " << id << ": " << msg << endl; }
-ofstream *tls_forwarding_messageStream(int id) { return new ofstream{"MessageStream_TLS_Client"s + to_string(id), ios::app}; }
+ofstream *tls_forwarding_messageStream(int id) { return new ofstream{"MessageStream_TLS_Client"s + to_string(id)}; }
 void tls_workOnClosed(int id) { cout << "Connection to TLS client " << id << " closed" << endl; }
 
 int main()
