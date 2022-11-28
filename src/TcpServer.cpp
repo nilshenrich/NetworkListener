@@ -3,7 +3,12 @@
 using namespace networking;
 using namespace std;
 
-TcpServer::TcpServer(char delimiter, size_t messageMaxLen) : NetworkListener{delimiter, messageMaxLen} {}
+TcpServer::TcpServer(function<void(const int)> workOnClosed,
+                     function<ostream *(int)> os) : NetworkListener{workOnClosed, os} {}
+TcpServer::TcpServer(char delimiter,
+                     function<void(const int, const string)> workOnMessage,
+                     function<void(const int)> workOnClosed,
+                     size_t messageMaxLen) : NetworkListener{delimiter, workOnMessage, workOnClosed, messageMaxLen} {}
 
 TcpServer::~TcpServer()
 {
@@ -22,7 +27,7 @@ int *TcpServer::connectionInit(const int clientId)
     return new int{clientId};
 }
 
-bool TcpServer::writeMsg(const int clientId, const std::string &msg)
+bool TcpServer::writeMsg(const int clientId, const string &msg)
 {
 #ifdef DEVELOP
     cout << typeid(this).name() << "::" << __func__ << ": Send to client " << clientId << ": " << msg << endl;
@@ -46,17 +51,5 @@ string TcpServer::readMsg(int *socket)
 
 void TcpServer::connectionDeinit(int *)
 {
-    return;
-}
-
-void TcpServer::workOnMessage(const int clientId, const string msg)
-{
-    workOnMessage_TcpServer(clientId, move(msg));
-    return;
-}
-
-void TcpServer::workOnClosed(const int clientId)
-{
-    workOnClosed_TcpServer(clientId);
     return;
 }

@@ -12,6 +12,8 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
+#include <limits>
+
 #include "NetworkListener.h"
 
 namespace networking
@@ -19,25 +21,32 @@ namespace networking
    class TcpServer : public NetworkListener<int>
    {
    public:
-      TcpServer(char delimiter = '\n', size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+      /**
+       * @brief Constructor for continuous stream forwarding
+       *
+       * @param workOnClosed  Working function on closed connection
+       * @param os            Function to create forwarding stream based on client ID
+       */
+      TcpServer(std::function<void(const int)> workOnClosed = nullptr,
+                std::function<std::ostream *(int)> os = nullptr);
+
+      /**
+       * @brief Constructor for fragmented messages
+       *
+       * @param delimiter     Character to split messages on
+       * @param workOnMessage Working function on incoming message
+       * @param workOnClosed  Working function on closed connection
+       * @param messageMaxLen Maximum message length
+       */
+      TcpServer(char delimiter,
+                std::function<void(const int, const std::string)> workOnMessage = nullptr,
+                std::function<void(const int)> workOnClosed = nullptr,
+                size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+
+      /**
+       * @brief Destructor
+       */
       virtual ~TcpServer();
-
-      /**
-       * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
-       * This method must be implemented in derived classes.
-       *
-       * @param tcpClientId
-       * @param tcpMsgFromClient
-       */
-      virtual void workOnMessage_TcpServer(const int tcpClientId, const std::string tcpMsgFromClient) = 0;
-
-      /**
-       * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
-       * This method must be implemented in derived classes.
-       *
-       * @param tcpClientId
-       */
-      virtual void workOnClosed_TcpServer(const int tcpClientId) = 0;
 
    private:
       /**
@@ -45,9 +54,9 @@ namespace networking
        *
        * @return int
        */
-      int init(const char *const,
-               const char *const,
-               const char *const) override final;
+      int init(const char *const = nullptr,
+               const char *const = nullptr,
+               const char *const = nullptr) override final;
 
       /**
        * @brief Initialize connection to a specific client (Identified by its TCP ID) (Do nothing. Just return pointer to TCP ID).
@@ -84,21 +93,6 @@ namespace networking
        * @return false
        */
       bool writeMsg(const int clientId, const std::string &msg) override final;
-
-      /**
-       * @brief Just call specific handler method for TCP server (workOnMessage_TcpServer).
-       *
-       * @param clientId
-       * @param msg
-       */
-      void workOnMessage(const int clientId, const std::string msg) override final;
-
-      /**
-       * @brief Just call specific handler method for TCP server (workOnClosed_TcpServer).
-       *
-       * @param clientId
-       */
-      void workOnClosed(const int clientId) override final;
 
       // Disallow copy
       TcpServer(const TcpServer &) = delete;

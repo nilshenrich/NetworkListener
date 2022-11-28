@@ -12,6 +12,7 @@
 #ifndef TLSSERVER_H
 #define TLSSERVER_H
 
+#include <limits>
 #include <openssl/ssl.h>
 
 #include "NetworkListener.h"
@@ -31,25 +32,32 @@ namespace networking
    class TlsServer : public NetworkListener<SSL, NetworkListener_SSL_Deleter>
    {
    public:
-      TlsServer(char delimiter = '\n', size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+      /**
+       * @brief Constructor for continuous stream forwarding
+       *
+       * @param workOnClosed  Working function on closed connection
+       * @param os            Function to create forwarding stream based on client ID
+       */
+      TlsServer(std::function<void(const int)> workOnClosed = nullptr,
+                std::function<std::ostream *(int)> os = nullptr);
+
+      /**
+       * @brief Constructor for fragmented messages
+       *
+       * @param delimiter     Character to split messages on
+       * @param workOnMessage Working function on incoming message
+       * @param workOnClosed  Working function on closed connection
+       * @param messageMaxLen Maximum message length
+       */
+      TlsServer(char delimiter,
+                std::function<void(const int, const std::string)> workOnMessage = nullptr,
+                std::function<void(const int)> workOnClosed = nullptr,
+                size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+
+      /**
+       * @brief Destructor
+       */
       virtual ~TlsServer();
-
-      /**
-       * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
-       * This method must be implemented in derived classes.
-       *
-       * @param tlsClientId
-       * @param tlsMsgFromClient
-       */
-      virtual void workOnMessage_TlsServer(const int tlsClientId, const std::string tlsMsgFromClient) = 0;
-
-      /**
-       * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
-       * This method must be implemented in derived classes.
-       *
-       * @param tlsClientId
-       */
-      virtual void workOnClosed_TlsServer(const int tlsClientId) = 0;
 
       /**
        * @brief Get specific subject part as string of the certificate of a specific connected client (Identified by its TCP ID).
@@ -110,21 +118,6 @@ namespace networking
        * @return false
        */
       bool writeMsg(const int clientId, const std::string &msg) override final;
-
-      /**
-       * @brief Just call specific handler method for TLS server (workOnMessage_TlsServer).
-       *
-       * @param clientId
-       * @param msg
-       */
-      void workOnMessage(const int clientId, const std::string msg) override final;
-
-      /**
-       * @brief Just call specific handler method for TLS server (workOnClosed_TlsServer).
-       *
-       * @param clientId
-       */
-      void workOnClosed(const int clientId) override final;
 
       // TLS context of the server
       std::unique_ptr<SSL_CTX, void (*)(SSL_CTX *)> serverContext{nullptr, SSL_CTX_free};

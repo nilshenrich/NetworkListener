@@ -4,19 +4,21 @@ Installable package to set up a server clients can connect to on TCP level and s
 
 The compatible client can be found [here](https://github.com/nilshenrich/NetworkClient)
 
+A test run can be found [here](https://github.com/nilshenrich/NetworkTester/actions)
+
 ## Table of contents
 
 1. [General explanation](#general-explanation)
     1. [Specifications](#specifications)
 1. [Installation](#installation)
 1. [Usage](#usage)
-    1. [Non-abstract Methods](#non-abstract-methods)
+    1. [Preparation](#preparation)
+    1. [Methods](#methods)
 1. [Example](#example)
     1. [Create certificates](#create-certificates)
     1. [Run example](#run-example)
 1. [System requirements](#system-requirements)
 1. [Known issues](#known-issues)
-    1. [Pipe error](#pipe-error)
 
 ## General explanation
 
@@ -28,7 +30,6 @@ As the names say, **libnetworkListenerTcp** creates a simple TCP server with no 
 ### Specifications
 
 1. Maximum number of connected clients at the same time: **4096**
-1. Maximum message size (Sending and receiving):  **std::string::max_size() - 1** (2³² - 2 (4294967294) for most systems)
 
 ## Installation
 
@@ -81,102 +82,60 @@ As already mentioned in [General explanation](#general-explanation), this projec
 
 ## Usage
 
-*In the subfolder [example](https://github.com/nilshenrich/NetworkListener/blob/main/example/main.cpp) you can find a good and simple example program that shows how to use the package*
+*In the subfolder [example](example/main.cpp) you can find a good and simple example program that shows how to use the package*
 
-To use this package, a new class must be created deriving from **TcpServer** or **TlsServer** or both. These two classes are abstract, so an object of one of these raw types can't be created.
+### Preparation
 
-In this case, I would recommend a private derivation, because all **TcpServer**/**TlsServer** methods are not meant to be used in other places than a direct child class.
+To use this package, just create an instance of **TcpServer** or **TlsServer** by using one of the provided constructors.\
+For the data transfer, either the **fragmentation-mode** or the **forwarding-mode** can be chosen.\
+In **fragmentation-mode**, a delimiter character must defined to split the incoming data stream to explicit messages. Please note that when using this mode, the delimiter character can't be part of any message.\
+In **forwarding-mode**, all incoming data gets forwarded to an output stream of your choice. I recommend to use the append-mode when defining this output stream.
 
-1. Create a new class derived from **TcpServer** and **TlsServer**:
+1. Implement worker methods
 
     ```cpp
-    #include "NetworkListener/TcpServer.h"
-    #include "NetworkListener/TlsServer.h"
-
-    using namespace std;
-    using namespace networking;
-
-    // New class with TCP and TLS listener functionality
-    class ExampleServer : private TcpServer, private TlsServer
+    // Worker for incoming message (Only used in fragmentation-mode)
+    void worker_message(int clientId, string msg)
     {
-    public:
-        // Constructor and destructor
-        ExampleServer() {}
-        virtual ~ExampleServer() {}
-    };
+        // Do stuff with message
+        // (clientId and msg could be changed if needed)
+    }
+
+    // Worker for closed connection to client
+    void worker_closed(int clientId)
+    {
+        // Do stuff after closing connection
+        // (clientId could be changed if needed)
+    }
+
+    // Output stream generator
+    ofstream *genertor_outStream(int clientId)
+    {
+        // Stream must be generated with new
+        // This example uses file stream but any other ostream could be used
+        return new ofstream{"FileForClient_"s + to_string(clientId), ios::app};
+    }
     ```
 
-1. Implement abstract methods from base classes
-    1. Work on message over TCP (unencrypted):
-
-        ```cpp
-        void workOnMessage_TcpServer(const int tcpClientId, const std::string tcpMsgFromClient)
-        {
-            // Do some stuff when message is received
-        }
-        ```
-
-        This method is called automatically as soon as a new message from a client is received over an unencrypted TCP connection.
-
-        Parameters:
-        - The **tcpClientId** parameter is the TCP ID of the sending client. This number is used to identify connected clients.
-
-        - The **tcpMsgFromClient** parameter contains the received message as raw string.
-
-        This method is started in its own thread. So feel free to insert time intensive code here, the listener continues running in parallel. But please make sure, your inserted code is thread safe (e.g. use [mutex](https://en.cppreference.com/w/cpp/thread/mutex)), so multiple executions of this method at the same time don't lead to a program crash.
-
-    1. Work on a closed TCP connection:
-
-        ```cpp
-        workOnClosed_TcpServer(const int tcpClientId)
-        {
-            // Do some stuff when existing TCP connection is closed
-        }
-        ```
-
-        This method is called as soon as an established TCP to a client is closed. When this method has finished, the TCP socket gets completely closed to have it open again for new connections.
-
-        The **tcpClientId** parameter is the TCP ID of the client whose connection is closed. This number is used to identify connected clients.
-
-    1. Work on message over TLS (encrypted):
-
-        ```cpp
-        void workOnMessage_TlsServer(const int tlsClientId, const std::string tlsMsgFromClient)
-        {
-            // Do some stuff when message is received
-        }
-        ```
-
-        This method is just the same as **workOnMessage_TcpServer**, but for receiving an encrypted message over a TLS connection.
-
-    1. Work on a closed TLS connection:
-
-        ```cpp
-        void workOnClosed_TlsServer(const int tlsClientId)
-        {
-            // Do some stuff when existing TLS connection is closed
-        }
-        ```
-
-        This method is just the same as **workOnClosed_TcpServer**, but for a closed TLS connection.
-
-    **!! Please do never call one of these 4 abstract methods somewhere in your code. These methods are automatically called by the NetworkListener library.**
-
-    *Please note that all parameters of these abstract methods are **const**, so they can't be changed. If you need to do a message adaption, but don't want to copy the whole string for performance reasons, use the **move**-constructor:*
+1. Create instance
 
     ```cpp
-    std::string modifiable = std::move(tcpMsgFromClient);
-    modifiable += '\n'; // Message modification
+    // Fragmentation mode (Delimiter is line break in this case)
+    TcpServer tcp_fragm{'\n', &worker_message, &worker_closed};
+    TlsServer tls_fragm{'\n', &worker_message, &worker_closed};
+
+    // Forwarding mode
+    TcpServer tcp_fwd{&worker_closed, &genertor_outStream};
+    TlsServer tls_fwd{&worker_closed, &genertor_outStream};
     ```
 
-After these two steps your program is ready to be compiled.\
-But there are some further methods worth knowing about.
+### Methods
 
-### Non-abstract Methods
+All methods can be used the same way for **fragmentation-mode** or **forwarding-mode**.
 
 1. start():
 
-    The **start**-method is used to start a TCP or TLS listener. When this method returns 0, the listener runs in the background. If the return value is other that 0, please see [NetworkingDefines.h](https://github.com/nilshenrich/NetworkListener/blob/main/include/NetworkingDefines.h) for definition of error codes.\
+    The **start**-method is used to start a TCP or TLS listener. When this method returns 0, the listener runs in the background. If the return value is other that 0, please see [NetworkingDefines.h](include/NetworkingDefines.h) for definition of error codes.\
     If your class derived from both **TcpServer** and **TlsServer**, the class name must be specified when calling **start()**:
 
     ```cpp
@@ -271,20 +230,4 @@ The installation process in this project is adapted to debian-based linux distri
 
 ## Known issues
 
-### [Pipe error](https://github.com/nilshenrich/NetworkListener/issues/7)
-
-When trying to start an instance derived from **TcpServer** or **TlsServer**, that is already running, the program runs into a pipe error, that exits the program with return code 141.
-
-To prevent a program exit, the signal **SIGPIPE** can be handled or ignored, but I will do my best to avoid this issue.
-
-```cpp
-// Ignore pipe error
-signal(SIGPIPE, SIG_IGN);
-
-// Handle pipe error using a custom handler function
-void sigpipe_handler(int)
-{
-    // Do some stuff to handle pipe error
-}
-signal(SIGPIPE, sigpipe_handler);
-```
+\<no known issues\>

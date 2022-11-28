@@ -14,10 +14,7 @@
 #ifndef NETWORKLISTENER_H
 #define NETWORKLISTENER_H
 
-#ifdef DEVELOP
 #include <iostream>
-#endif // DEVELOP
-
 #include <string>
 #include <vector>
 #include <map>
@@ -25,8 +22,9 @@
 #include <mutex>
 #include <cstring>
 #include <exception>
-#include <limits>
 #include <atomic>
+#include <memory>
+#include <functional>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -50,7 +48,7 @@ namespace networking
         }
 
     private:
-        std::string msg;
+        const std::string msg;
 
         // Delete default constructor
         NetworkListener_error() = delete;
@@ -96,7 +94,41 @@ namespace networking
     class NetworkListener
     {
     public:
-        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER{delimiter}, MAXIMUM_MESSAGE_LENGTH{messageMaxLen} {}
+        /**
+         * @brief Constructor for continuous stream forwarding
+         *
+         * @param workOnClosed  Working function on closed connection
+         * @param os            Function to create forwarding stream based on client ID
+         */
+        NetworkListener(std::function<void(const int)> workOnClosed,
+                        std::function<std::ostream *(int)> os) : generateNewForwardStream{os},
+                                                                 workOnMessage{nullptr},
+                                                                 workOnClosed{workOnClosed},
+                                                                 DELIMITER_FOR_FRAGMENTATION{0},
+                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                                                                 MESSAGE_FRAGMENTATION_ENABLED{false} {}
+
+        /**
+         * @brief Constructor for fragmented messages
+         *
+         * @param delimiter     Character to split messages on
+         * @param workOnMessage Working function on incoming message
+         * @param workOnClosed  Working function on closed connection
+         * @param messageMaxLen Maximum message length
+         */
+        NetworkListener(char delimiter,
+                        std::function<void(const int, const std::string)> workOnMessage,
+                        std::function<void(const int)> workOnClosed,
+                        size_t messageMaxLen) : generateNewForwardStream{nullptr},
+                                                workOnMessage{workOnMessage},
+                                                workOnClosed{workOnClosed},
+                                                DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
+                                                MESSAGE_FRAGMENTATION_ENABLED{true} {}
+
+        /**
+         * @brief Destructor
+         */
         virtual ~NetworkListener() {}
 
         /**
@@ -110,10 +142,10 @@ namespace networking
          * @param pathToPrivKey
          * @return int (NETWORKLISTENER_START_OK if successful, see NetworkListenerDefines.h for other return values)
          */
-        virtual int start(const int port,
-                          const char *const pathToCaCert = nullptr,
-                          const char *const pathToCert = nullptr,
-                          const char *const pathToPrivKey = nullptr);
+        int start(const int port,
+                  const char *const pathToCaCert = nullptr,
+                  const char *const pathToCert = nullptr,
+                  const char *const pathToPrivKey = nullptr);
 
         /**
          * @brief Stops the listener.
@@ -131,12 +163,19 @@ namespace networking
         bool sendMsg(const int clientId, const std::string &msg);
 
         /**
+         * @brief Get all connected clients identified by ID as list
+         *
+         * @return vector<int>
+         */
+        std::vector<int> getAllClientIds() const;
+
+        /**
          * @brief Get the IP address of a specific connected client (Identified by its TCP ID).
          *
          * @param clientId
          * @return std::string
          */
-        std::string getClientIp(const int clientId);
+        std::string getClientIp(const int clientId) const;
 
         /**
          * @brief Return if listener is running
@@ -198,25 +237,6 @@ namespace networking
          */
         virtual bool writeMsg(const int clientId, const std::string &msg) = 0;
 
-        /**
-         * @brief Do some stuff when a new message is received from a specific client (Identified by its TCP ID).
-         * This method is called automatically as soon as a new message is received.
-         * This method is abstract and must be implemented by derived classes.
-         *
-         * @param clientId
-         * @param msg
-         */
-        virtual void workOnMessage(const int clientId, const std::string msg) = 0;
-
-        /**
-         * @brief Do some stuff when a connection to a specific client (Identified by its TCP ID) is closed.
-         * This method is called automatically as soon as a connection is closed or broken.
-         * This method is abstract and must be implemented by derived classes.
-         *
-         * @param clientId
-         */
-        virtual void workOnClosed(const int clientId) = 0;
-
         // Map to store all active connections with their identifying TCP ID
         std::map<int, std::unique_ptr<SocketType, SocketDeleter>> activeConnections{};
 
@@ -259,11 +279,22 @@ namespace networking
         // Flag to indicate if the listener is running
         RunningFlag running{false};
 
+        // Pointer to a function that returns an out stream to forward incoming data to
+        std::function<std::ostream *(int)> generateNewForwardStream;
+        std::map<int, std::unique_ptr<std::ostream>> forwardStreams;
+
+        // Pointer to worker functions on incoming message (for fragmentation mode only) or closed connection
+        std::function<void(const int, const std::string)> workOnMessage;
+        std::function<void(const int)> workOnClosed;
+
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
-        const char DELIMITER;
+        const char DELIMITER_FOR_FRAGMENTATION;
 
         // Maximum message length (incoming and outgoing) (default is 2³² - 2 = 4294967294)
-        const size_t MAXIMUM_MESSAGE_LENGTH;
+        const size_t MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION;
+
+        // Flag if messages shall be fragmented
+        const bool MESSAGE_FRAGMENTATION_ENABLED;
 
         // Disallow copy
         NetworkListener() = delete;
@@ -274,7 +305,7 @@ namespace networking
     // ============================== Implementation of non-abstract methods. ==============================
     // ====================== Must be in header file because of the template class. =======================
 
-#include "../src/NetworkListener.tpp"
+#include "NetworkListener.tpp"
 }
 
 #endif // NETWORKLISTENER_H
