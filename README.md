@@ -14,6 +14,7 @@ A test run can be found [here](https://github.com/nilshenrich/NetworkTester/acti
 1. [Usage](#usage)
     1. [Preparation](#preparation)
     1. [Methods](#methods)
+    1. [Passing worker function](#passing-worker-function)
 1. [Example](#example)
     1. [Create certificates](#create-certificates)
     1. [Run example](#run-example)
@@ -83,6 +84,12 @@ As already mentioned in [General explanation](#general-explanation), this projec
 ## Usage
 
 *In the subfolder [example](example/main.cpp) you can find a good and simple example program that shows how to use the package*
+
+Please mind that the TcpServer and TlsServer are defined in namespace ```networking```, so all example code here expects this using directive:
+
+```cpp
+using namespace networking;
+```
 
 ### Preparation
 
@@ -195,6 +202,75 @@ All methods can be used the same way for **fragmentation-mode** or **forwarding-
     The **isRunning**-method returns the running flag of the NetworkListener.\
     **True** means: *The listener is running*\
     **False** means: *The listener is not running*
+
+### Passing worker function
+
+Passing worker functions might be a bit tricky depending on the definition functions definition.\
+The following examples only show passing the worker for established connections. Other workers can be passed similarly.\
+The following cases can be handled as shown:
+
+1. Standalone function:
+
+    The easiest way is using a standalone function that is not a part of any class.
+
+    ```cpp
+    void standalone(const int clientId)
+    {
+        // Some code
+    }
+
+    TcpServer tcpServer{&standalone};
+    ```
+
+1. Member function of this:
+
+    A worker function could also be defined as a class method. If the TCP/TLS server shall be created within the same class that holds the worker function (e.g. in initializer list), this can be done as follows:
+
+    ```cpp
+    class ExampleClass
+    {
+    public:
+        ExampleClass(): tcpServer{::std::bind(&ExampleClass::classMember, this, ::std::placeholders::_1)} {}
+        virtual ~ExampleClass() {}
+
+    private:
+        // TCP server as class member
+        TcpServer tcpServer;
+
+        void classMember(const int clientId)
+        {
+            // Some code
+        }
+    };
+    ```
+
+    The **bind** function is used to get the function reference to a method from an object, in this case ```this```. For each attribute of the passed function, a placeholder with increasing number must be passed.
+
+1. Member function of foreign class:
+
+    Passing a member function from a foreign class to TCP/TLS server can be done similarly to above example.
+
+    ```cpp
+    class ExampleClass
+    {
+    public:
+        ExampleClass() {}
+        virtual ~ExampleClass() {}
+
+    private:
+        void classMember(const int clientId)
+        {
+            // Some code
+        }
+    };
+
+    // Create object
+    ExampleClass exampleClass;
+
+    // TCP server outside from class
+    TcpServer tcpServer{::std::bind(&ExampleClass::classMember, exampleClass, ::std::placeholders::_1)};
+
+    ```
 
 ## Example
 
