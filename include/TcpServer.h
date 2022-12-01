@@ -27,7 +27,8 @@ namespace networking
        * @param workOnClosed  Working function on closed connection
        * @param os            Function to create forwarding stream based on client ID
        */
-      TcpServer(std::function<void(const int)> workOnClosed = nullptr,
+      TcpServer(std::function<void(const int)> workOnEstablished = nullptr,
+                std::function<void(const int)> workOnClosed = nullptr,
                 std::function<std::ostream *(int)> os = nullptr);
 
       /**
@@ -40,6 +41,7 @@ namespace networking
        */
       TcpServer(char delimiter,
                 std::function<void(const int, const std::string)> workOnMessage = nullptr,
+                std::function<void(const int)> workOnEstablished = nullptr,
                 std::function<void(const int)> workOnClosed = nullptr,
                 size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
 

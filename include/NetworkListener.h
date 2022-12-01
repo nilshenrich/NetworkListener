@@ -100,9 +100,11 @@ namespace networking
          * @param workOnClosed  Working function on closed connection
          * @param os            Function to create forwarding stream based on client ID
          */
-        NetworkListener(std::function<void(const int)> workOnClosed,
+        NetworkListener(std::function<void(const int)> workOnEstablished,
+                        std::function<void(const int)> workOnClosed,
                         std::function<std::ostream *(int)> os) : generateNewForwardStream{os},
                                                                  workOnMessage{nullptr},
+                                                                 workOnEstablished{workOnEstablished},
                                                                  workOnClosed{workOnClosed},
                                                                  DELIMITER_FOR_FRAGMENTATION{0},
                                                                  MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
@@ -118,9 +120,11 @@ namespace networking
          */
         NetworkListener(char delimiter,
                         std::function<void(const int, const std::string)> workOnMessage,
+                        std::function<void(const int)> workOnEstablished,
                         std::function<void(const int)> workOnClosed,
                         size_t messageMaxLen) : generateNewForwardStream{nullptr},
                                                 workOnMessage{workOnMessage},
+                                                workOnEstablished{workOnEstablished},
                                                 workOnClosed{workOnClosed},
                                                 DELIMITER_FOR_FRAGMENTATION{delimiter},
                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
@@ -283,8 +287,9 @@ namespace networking
         std::function<std::ostream *(int)> generateNewForwardStream;
         std::map<int, std::unique_ptr<std::ostream>> forwardStreams;
 
-        // Pointer to worker functions on incoming message (for fragmentation mode only) or closed connection
+        // Pointer to worker functions on incoming message (for fragmentation mode only), established or closed connection
         std::function<void(const int, const std::string)> workOnMessage;
+        std::function<void(const int)> workOnEstablished;
         std::function<void(const int)> workOnClosed;
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
