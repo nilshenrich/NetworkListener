@@ -329,6 +329,10 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     if (generateNewForwardStream)
         forwardStreams[clientId] = unique_ptr<ostream>{generateNewForwardStream(clientId)};
 
+    // Run worker for new established connections
+    if (workOnEstablished)
+        workOnEstablished(clientId);
+
     // Vectors of running work handlers and their status flags
     vector<thread> workHandlers;
     vector<unique_ptr<RunningFlag>> workHandlersRunning;
