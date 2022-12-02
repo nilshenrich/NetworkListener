@@ -148,6 +148,34 @@ namespace networking
         bool sendMsg(const int clientId, const std::string &msg);
 
         /**
+         * @brief Set worker executed on each incoming message in fragmentation mode
+         *
+         * @param worker
+         */
+        void setWorkOnMessage(std::function<void(const int, const std::string)> worker);
+
+        /**
+         * @brief Set creator creating a forwarding out stream for each established connection in forwarding mode
+         *
+         * @param creator
+         */
+        void setCreateForwardStream(std::function<std::ostream *(const int)> creator);
+
+        /**
+         * @brief Set worker executed on each new established connection
+         *
+         * @param worker
+         */
+        void setWorkOnEstablished(std::function<void(const int)> worker);
+
+        /**
+         * @brief Set worker executed on each closed connection
+         *
+         * @param worker
+         */
+        void setWorkOnClosed(std::function<void(const int)> worker);
+
+        /**
          * @brief Get all connected clients identified by ID as list
          *
          * @return vector<int>
@@ -265,7 +293,7 @@ namespace networking
         RunningFlag running{false};
 
         // Pointer to a function that returns an out stream to forward incoming data to
-        std::function<std::ostream *(int)> generateNewForwardStream{nullptr};
+        std::function<std::ostream *(const int)> generateNewForwardStream{nullptr};
         std::map<int, std::unique_ptr<std::ostream>> forwardStreams;
 
         // Pointer to worker functions on incoming message (for fragmentation mode only), established or closed connection
