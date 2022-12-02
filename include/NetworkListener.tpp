@@ -181,6 +181,30 @@ bool NetworkListener<SocketType, SocketDeleter>::sendMsg(const int clientId, con
 }
 
 template <class SocketType, class SocketDeleter>
+void NetworkListener<SocketType, SocketDeleter>::setWorkOnMessage(std::function<void(const int, const std::string)> worker)
+{
+    workOnMessage = worker;
+}
+
+template <class SocketType, class SocketDeleter>
+void NetworkListener<SocketType, SocketDeleter>::setCreateForwardStream(std::function<std::ostream *(const int)> creator)
+{
+    generateNewForwardStream = creator;
+}
+
+template <class SocketType, class SocketDeleter>
+void NetworkListener<SocketType, SocketDeleter>::setWorkOnEstablished(std::function<void(const int)> worker)
+{
+    workOnEstablished = worker;
+}
+
+template <class SocketType, class SocketDeleter>
+void NetworkListener<SocketType, SocketDeleter>::setWorkOnClosed(std::function<void(const int)> worker)
+{
+    workOnClosed = worker;
+}
+
+template <class SocketType, class SocketDeleter>
 std::vector<int> NetworkListener<SocketType, SocketDeleter>::getAllClientIds() const
 {
     using namespace std;
