@@ -52,25 +52,33 @@ int main()
         {
         case 'c':
         case 'C':
-        {
-            tcpServer.reset(new TcpServer{&tcp_forwarding_workOnEstablished, &tcp_workOnClosed, &tcp_forwarding_messageStream});
-            tlsServer.reset(new TlsServer{&tls_forwarding_workOnEstablished, &tls_workOnClosed, &tls_forwarding_messageStream});
+            tcpServer.reset(new TcpServer);
+            tlsServer.reset(new TlsServer);
+            tcpServer->setCreateForwardStream(&tcp_forwarding_messageStream);
+            tcpServer->setWorkOnClosed(&tcp_workOnClosed);
+            tcpServer->setWorkOnEstablished(&tcp_forwarding_workOnEstablished);
+            tlsServer->setCreateForwardStream(&tls_forwarding_messageStream);
+            tlsServer->setWorkOnClosed(&tls_workOnClosed);
+            tlsServer->setWorkOnEstablished(&tls_forwarding_workOnEstablished);
             tcpServer->start(8081);
             tlsServer->start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
             this_thread::sleep_for(10s);
             break;
-        }
 
         case 'f':
         case 'F':
-        {
-            tcpServer.reset(new TcpServer{'\n', &tcp_fragmented_workOnMessage, &tcp_fragmented_workOnEstablished, &tcp_workOnClosed});
-            tlsServer.reset(new TlsServer{'\n', &tls_fragmented_workOnMessage, &tls_fragmented_workOnEstablished, &tls_workOnClosed});
+            tcpServer.reset(new TcpServer{'\n'});
+            tlsServer.reset(new TlsServer{'\n'});
+            tcpServer->setWorkOnClosed(&tcp_workOnClosed);
+            tcpServer->setWorkOnEstablished(&tcp_fragmented_workOnEstablished);
+            tcpServer->setWorkOnMessage(&tcp_fragmented_workOnMessage);
+            tlsServer->setWorkOnClosed(&tls_workOnClosed);
+            tlsServer->setWorkOnEstablished(&tls_fragmented_workOnEstablished);
+            tlsServer->setWorkOnMessage(&tls_fragmented_workOnMessage);
             tcpServer->start(8081);
             tlsServer->start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
             this_thread::sleep_for(10s);
             break;
-        }
 
         default:
             return 0;
