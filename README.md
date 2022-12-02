@@ -98,6 +98,8 @@ For the data transfer, either the **fragmentation-mode** or the **forwarding-mod
 In **fragmentation-mode**, a delimiter character must defined to split the incoming data stream to explicit messages. Please note that when using this mode, the delimiter character can't be part of any message.\
 In **forwarding-mode**, all incoming data gets forwarded to an output stream of your choice. I recommend to use the normal writing mode when defining this output stream.
 
+Worker functions can be defined that are executed automatically on specific events. For more details, please check [Passing worker function](#passing-worker-function).
+
 1. Implement worker methods
 
     ```cpp
@@ -128,12 +130,91 @@ In **forwarding-mode**, all incoming data gets forwarded to an output stream of 
 
     ```cpp
     // Fragmentation mode (Delimiter is line break in this case)
-    TcpServer tcp_fragm{'\n', &worker_message, &worker_closed};
-    TlsServer tls_fragm{'\n', &worker_message, &worker_closed};
+    TcpServer tcp_fragm{'\n'};
+    TlsServer tls_fragm{'\n'};
+
+    // Optionally you can give a maximum length of messages (incoming and sent) for fragmentation mode
+    // When using the example above, the maximum message length is set to the maximum a string can handle on your system
+    TcpServer tcp_fragm_short{'\n', 100};
+    TlsServer tls_fragm_short{'\n', 100};
 
     // Forwarding mode
-    TcpServer tcp_fwd{&worker_closed, &genertor_outStream};
-    TlsServer tls_fwd{&worker_closed, &genertor_outStream};
+    TcpServer tcp_fwd;
+    TlsServer tls_fwd;
+    ```
+
+### Passing worker function
+
+Passing worker functions might be a bit tricky depending on the definition functions definition.\
+The following examples only show passing the worker for established connections. Other workers can be passed similarly.\
+The following cases can be handled as shown:
+
+1. Standalone function:
+
+    The easiest way is using a standalone function that is not a part of any class.
+
+    ```cpp
+    void standalone(const int clientId)
+    {
+        // Some code
+    }
+
+    TcpServer tcpServer;
+    tcpServer.setWorkOnEstablished(&standalone);
+    ```
+
+1. Member function of this:
+
+    A worker function could also be defined as a class method. If the TCP/TLS server shall be created within the same class that holds the worker function (e.g. in initializer list), this can be done as follows:
+
+    ```cpp
+    class ExampleClass
+    {
+    public:
+        ExampleClass()
+        {
+            tcpServer.setWorkOnEstablished(::std::bind(&ExampleClass::classMember, this, ::std::placeholders::_1));
+        }
+        virtual ~ExampleClass() {}
+
+    private:
+        // TCP server as class member
+        TcpServer tcpServer{};
+
+        void classMember(const int clientId)
+        {
+            // Some code
+        }
+    };
+    ```
+
+    The **bind** function is used to get the function reference to a method from an object, in this case ```this```. For each attribute of the passed function, a placeholder with increasing number must be passed.
+
+1. Member function of foreign class:
+
+    Passing a member function from a foreign class to TCP/TLS server can be done similarly to above example.
+
+    ```cpp
+    class ExampleClass
+    {
+    public:
+        ExampleClass() {}
+        virtual ~ExampleClass() {}
+
+    private:
+        void classMember(const int clientId)
+        {
+            // Some code
+        }
+    };
+
+    // Create object
+    ExampleClass exampleClass;
+
+    // TCP server outside from class
+    TcpServer tcpServer;
+    tcpServer.setWorkOnEstablished(::std::bind(&ExampleClass::classMember, exampleClass, ::std::placeholders::_1));
+
     ```
 
 ### Methods
@@ -202,75 +283,6 @@ All methods can be used the same way for **fragmentation-mode** or **forwarding-
     The **isRunning**-method returns the running flag of the NetworkListener.\
     **True** means: *The listener is running*\
     **False** means: *The listener is not running*
-
-### Passing worker function
-
-Passing worker functions might be a bit tricky depending on the definition functions definition.\
-The following examples only show passing the worker for established connections. Other workers can be passed similarly.\
-The following cases can be handled as shown:
-
-1. Standalone function:
-
-    The easiest way is using a standalone function that is not a part of any class.
-
-    ```cpp
-    void standalone(const int clientId)
-    {
-        // Some code
-    }
-
-    TcpServer tcpServer{&standalone};
-    ```
-
-1. Member function of this:
-
-    A worker function could also be defined as a class method. If the TCP/TLS server shall be created within the same class that holds the worker function (e.g. in initializer list), this can be done as follows:
-
-    ```cpp
-    class ExampleClass
-    {
-    public:
-        ExampleClass(): tcpServer{::std::bind(&ExampleClass::classMember, this, ::std::placeholders::_1)} {}
-        virtual ~ExampleClass() {}
-
-    private:
-        // TCP server as class member
-        TcpServer tcpServer;
-
-        void classMember(const int clientId)
-        {
-            // Some code
-        }
-    };
-    ```
-
-    The **bind** function is used to get the function reference to a method from an object, in this case ```this```. For each attribute of the passed function, a placeholder with increasing number must be passed.
-
-1. Member function of foreign class:
-
-    Passing a member function from a foreign class to TCP/TLS server can be done similarly to above example.
-
-    ```cpp
-    class ExampleClass
-    {
-    public:
-        ExampleClass() {}
-        virtual ~ExampleClass() {}
-
-    private:
-        void classMember(const int clientId)
-        {
-            // Some code
-        }
-    };
-
-    // Create object
-    ExampleClass exampleClass;
-
-    // TCP server outside from class
-    TcpServer tcpServer{::std::bind(&ExampleClass::classMember, exampleClass, ::std::placeholders::_1)};
-
-    ```
 
 ## Example
 
