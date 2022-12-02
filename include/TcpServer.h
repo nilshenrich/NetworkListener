@@ -23,27 +23,16 @@ namespace networking
    public:
       /**
        * @brief Constructor for continuous stream forwarding
-       *
-       * @param workOnClosed  Working function on closed connection
-       * @param os            Function to create forwarding stream based on client ID
        */
-      TcpServer(std::function<void(const int)> workOnEstablished = nullptr,
-                std::function<void(const int)> workOnClosed = nullptr,
-                std::function<std::ostream *(int)> os = nullptr);
+      TcpServer();
 
       /**
        * @brief Constructor for fragmented messages
        *
        * @param delimiter     Character to split messages on
-       * @param workOnMessage Working function on incoming message
-       * @param workOnClosed  Working function on closed connection
        * @param messageMaxLen Maximum message length
        */
-      TcpServer(char delimiter,
-                std::function<void(const int, const std::string)> workOnMessage = nullptr,
-                std::function<void(const int)> workOnEstablished = nullptr,
-                std::function<void(const int)> workOnClosed = nullptr,
-                size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
+      TcpServer(char delimiter, size_t messageMaxLen = std::numeric_limits<size_t>::max() - 1);
 
       /**
        * @brief Destructor

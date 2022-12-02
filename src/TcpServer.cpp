@@ -3,14 +3,8 @@
 using namespace networking;
 using namespace std;
 
-TcpServer::TcpServer(function<void(const int)> workOnEstablished,
-                     function<void(const int)> workOnClosed,
-                     function<ostream *(int)> os) : NetworkListener{workOnEstablished, workOnClosed, os} {}
-TcpServer::TcpServer(char delimiter,
-                     function<void(const int, const string)> workOnMessage,
-                     function<void(const int)> workOnEstablished,
-                     function<void(const int)> workOnClosed,
-                     size_t messageMaxLen) : NetworkListener{delimiter, workOnMessage, workOnEstablished, workOnClosed, messageMaxLen} {}
+TcpServer::TcpServer() : NetworkListener{} {}
+TcpServer::TcpServer(char delimiter, size_t messageMaxLen) : NetworkListener{delimiter, messageMaxLen} {}
 
 TcpServer::~TcpServer()
 {

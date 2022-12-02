@@ -96,39 +96,20 @@ namespace networking
     public:
         /**
          * @brief Constructor for continuous stream forwarding
-         *
-         * @param workOnClosed  Working function on closed connection
-         * @param os            Function to create forwarding stream based on client ID
          */
-        NetworkListener(std::function<void(const int)> workOnEstablished,
-                        std::function<void(const int)> workOnClosed,
-                        std::function<std::ostream *(int)> os) : generateNewForwardStream{os},
-                                                                 workOnMessage{nullptr},
-                                                                 workOnEstablished{workOnEstablished},
-                                                                 workOnClosed{workOnClosed},
-                                                                 DELIMITER_FOR_FRAGMENTATION{0},
-                                                                 MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
-                                                                 MESSAGE_FRAGMENTATION_ENABLED{false} {}
+        NetworkListener() : DELIMITER_FOR_FRAGMENTATION{0},
+                            MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{0},
+                            MESSAGE_FRAGMENTATION_ENABLED{false} {}
 
         /**
          * @brief Constructor for fragmented messages
          *
          * @param delimiter     Character to split messages on
-         * @param workOnMessage Working function on incoming message
-         * @param workOnClosed  Working function on closed connection
          * @param messageMaxLen Maximum message length
          */
-        NetworkListener(char delimiter,
-                        std::function<void(const int, const std::string)> workOnMessage,
-                        std::function<void(const int)> workOnEstablished,
-                        std::function<void(const int)> workOnClosed,
-                        size_t messageMaxLen) : generateNewForwardStream{nullptr},
-                                                workOnMessage{workOnMessage},
-                                                workOnEstablished{workOnEstablished},
-                                                workOnClosed{workOnClosed},
-                                                DELIMITER_FOR_FRAGMENTATION{delimiter},
-                                                MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
-                                                MESSAGE_FRAGMENTATION_ENABLED{true} {}
+        NetworkListener(char delimiter, size_t messageMaxLen) : DELIMITER_FOR_FRAGMENTATION{delimiter},
+                                                                MAXIMUM_MESSAGE_LENGTH_FOR_FRAGMENTATION{messageMaxLen},
+                                                                MESSAGE_FRAGMENTATION_ENABLED{true} {}
 
         /**
          * @brief Destructor
@@ -284,13 +265,13 @@ namespace networking
         RunningFlag running{false};
 
         // Pointer to a function that returns an out stream to forward incoming data to
-        std::function<std::ostream *(int)> generateNewForwardStream;
+        std::function<std::ostream *(int)> generateNewForwardStream{nullptr};
         std::map<int, std::unique_ptr<std::ostream>> forwardStreams;
 
         // Pointer to worker functions on incoming message (for fragmentation mode only), established or closed connection
-        std::function<void(const int, const std::string)> workOnMessage;
-        std::function<void(const int)> workOnEstablished;
-        std::function<void(const int)> workOnClosed;
+        std::function<void(const int, const std::string)> workOnMessage{nullptr};
+        std::function<void(const int)> workOnEstablished{nullptr};
+        std::function<void(const int)> workOnClosed{nullptr};
 
         // Delimiter for the message framing (incoming and outgoing) (default is '\n')
         const char DELIMITER_FOR_FRAGMENTATION;
@@ -302,7 +283,6 @@ namespace networking
         const bool MESSAGE_FRAGMENTATION_ENABLED;
 
         // Disallow copy
-        NetworkListener() = delete;
         NetworkListener(const NetworkListener &) = delete;
         NetworkListener &operator=(const NetworkListener &) = delete;
     };
