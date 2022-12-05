@@ -214,7 +214,18 @@ The following cases can be handled as shown:
     // TCP server outside from class
     TcpServer tcpServer;
     tcpServer.setWorkOnEstablished(::std::bind(&ExampleClass::classMember, exampleClass, ::std::placeholders::_1));
+    ```
 
+1. Lambda
+
+    A worker function could also be defined directly using a lambda.
+
+    ```cpp
+    TcpServer tcpServer;
+    tcpServer.setWorkOnEstablished([](const int clientId)
+    {
+        // Some code
+    });
     ```
 
 ### Methods
