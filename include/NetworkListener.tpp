@@ -323,32 +323,6 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
         activeConnections[clientId] = unique_ptr<SocketType, SocketDeleter>{connection_p};
     }
 
-    // Send small message marking an established connection
-    if (!writeMsg(clientId, string{1, DELIMITER_FOR_FRAGMENTATION}))
-    {
-#ifdef DEVELOP
-        cerr << typeid(this).name() << "::" << __func__ << ": Failed to send message to client marking this connection to be established " << clientId << endl;
-#endif // DEVELOP
-
-        {
-            lock_guard<mutex> lck{activeConnections_m};
-
-            // Deinitialize the connection
-            connectionDeinit(connection_p);
-
-            // Block the connection from being used anymore
-            shutdown(clientId, SHUT_RDWR);
-
-            // Remove connection from active connections
-            activeConnections.erase(clientId);
-        }
-
-        // Close the connection
-        close(clientId);
-
-        return;
-    }
-
     // Create forwarding stream for this connection
     if (generateNewForwardStream)
         forwardStreams[clientId] = unique_ptr<ostream>{generateNewForwardStream(clientId)};
@@ -367,6 +341,7 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     {
         // Wait for new incoming message (implemented in derived classes)
         // If message is empty string, the connection is broken
+        // BUG: Execution stucks here if server is stopped immediately after client connection
         string msg{readMsg(connection_p)};
         if (msg.empty())
         {
