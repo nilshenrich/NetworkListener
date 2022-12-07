@@ -269,7 +269,7 @@ void NetworkListener<SocketType, SocketDeleter>::listenerAccept()
             activeConnections[newConnection] = unique_ptr<SocketType, SocketDeleter>{connection_p};
         }
 
-        // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
+        // When a new connection is established, the incoming messages of this connection should be read in a new process
         unique_ptr<RunningFlag> recRunning{new RunningFlag{true}};
         thread rec_t{&NetworkListener::listenerReceive, this, newConnection, recRunning.get()};
 
@@ -327,6 +327,8 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     SocketType *connection_p;
     {
         lock_guard<mutex> lck{activeConnections_m};
+        if (activeConnections.find(clientId) == activeConnections.end())
+            return;
         connection_p = activeConnections[clientId].get();
     }
 
