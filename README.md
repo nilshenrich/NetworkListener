@@ -110,6 +110,13 @@ Worker functions can be defined that are executed automatically on specific even
         // (clientId and msg could be changed if needed)
     }
 
+    // Worker for established connection to a client
+    void worker_established(int clientId)
+    {
+        // Do stuff immediately after establishing a new connection
+        // (clientId could be changed if needed)
+    }
+
     // Worker for closed connection to client
     void worker_closed(int clientId)
     {
@@ -122,9 +129,12 @@ Worker functions can be defined that are executed automatically on specific even
     {
         // Stream must be generated with new
         // This example uses file stream but any other ostream could be used
+        // (clientId could be changed if needed)
         return new ofstream{"FileForClient_"s + to_string(clientId)};
     }
     ```
+
+    Please be aware that the ```stop``` method must not be used in any worker function. This would lead to a program stuck.
 
 1. Create instance
 
