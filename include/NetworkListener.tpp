@@ -258,7 +258,18 @@ void NetworkListener<SocketType, SocketDeleter>::listenerAccept()
         cout << typeid(this).name() << "::" << __func__ << ": New client connected: " << newConnection << endl;
 #endif // DEVELOP
 
-        // When a new connection is established (Unencrypted so far), the incoming messages of this connection should be read in a new process
+        // Initialize the (so far unencrypted) connection
+        SocketType *connection_p{connectionInit(newConnection)};
+        if (!connection_p)
+            continue;
+
+        // Add connection to active connections
+        {
+            lock_guard<mutex> lck{activeConnections_m};
+            activeConnections[newConnection] = unique_ptr<SocketType, SocketDeleter>{connection_p};
+        }
+
+        // When a new connection is established, the incoming messages of this connection should be read in a new process
         unique_ptr<RunningFlag> recRunning{new RunningFlag{true}};
         thread rec_t{&NetworkListener::listenerReceive, this, newConnection, recRunning.get()};
 
@@ -312,15 +323,13 @@ void NetworkListener<SocketType, SocketDeleter>::listenerReceive(const int clien
     // Mark Thread as running (Add running flag and connect to handler)
     NetworkListener_running_manager running_mgr{*recRunning_p};
 
-    // Initialize the (so far unencrypted) connection
-    SocketType *connection_p{connectionInit(clientId)};
-    if (!connection_p)
-        return;
-
-    // Add connection to active connections
+    // Get connection from map
+    SocketType *connection_p;
     {
         lock_guard<mutex> lck{activeConnections_m};
-        activeConnections[clientId] = unique_ptr<SocketType, SocketDeleter>{connection_p};
+        if (activeConnections.find(clientId) == activeConnections.end())
+            return;
+        connection_p = activeConnections[clientId].get();
     }
 
     // Create forwarding stream for this connection
