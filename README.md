@@ -20,7 +20,7 @@ A test run can be found [here](https://github.com/nilshenrich/NetworkTester/acti
     1. [Run example](#run-example)
 1. [System requirements](#system-requirements)
 1. [Known issues](#known-issues)
-    1. [Pipe error if client sends immediately after exiting start](#pipe-error-if-client-sends-immediately-after-exiting-start)
+    1. [Pipe error if client stops immediately after exiting start](#pipe-error-if-client-stops-immediately-after-exiting-start)
 
 ## General explanation
 
@@ -340,7 +340,7 @@ The installation process in this project is adapted to debian-based linux distri
 
 ## Known issues
 
-### [Pipe error if client sends immediately after exiting start](https://github.com/nilshenrich/NetworkListener/issues/21)
+### [Pipe error if client stops immediately after exiting start](https://github.com/nilshenrich/NetworkListener/issues/21)
 
 When a client sends a message to the listener immediately after the NetworkClient::start() method returned, the listener program throws a pipe error.
 
