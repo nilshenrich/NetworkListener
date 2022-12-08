@@ -20,6 +20,7 @@ A test run can be found [here](https://github.com/nilshenrich/NetworkTester/acti
     1. [Run example](#run-example)
 1. [System requirements](#system-requirements)
 1. [Known issues](#known-issues)
+    1. [Pipe error if client sends immediately after exiting start](#pipe-error-if-client-sends-immediately-after-exiting-start)
 
 ## General explanation
 
@@ -110,6 +111,13 @@ Worker functions can be defined that are executed automatically on specific even
         // (clientId and msg could be changed if needed)
     }
 
+    // Worker for established connection to a client
+    void worker_established(int clientId)
+    {
+        // Do stuff immediately after establishing a new connection
+        // (clientId could be changed if needed)
+    }
+
     // Worker for closed connection to client
     void worker_closed(int clientId)
     {
@@ -122,9 +130,12 @@ Worker functions can be defined that are executed automatically on specific even
     {
         // Stream must be generated with new
         // This example uses file stream but any other ostream could be used
+        // (clientId could be changed if needed)
         return new ofstream{"FileForClient_"s + to_string(clientId)};
     }
     ```
+
+    Please be aware that the ```stop``` method must not be used in any worker function. This would lead to a program stuck.
 
 1. Create instance
 
@@ -214,7 +225,18 @@ The following cases can be handled as shown:
     // TCP server outside from class
     TcpServer tcpServer;
     tcpServer.setWorkOnEstablished(::std::bind(&ExampleClass::classMember, exampleClass, ::std::placeholders::_1));
+    ```
 
+1. Lambda
+
+    A worker function could also be defined directly using a lambda.
+
+    ```cpp
+    TcpServer tcpServer;
+    tcpServer.setWorkOnEstablished([](const int clientId)
+    {
+        // Some code
+    });
     ```
 
 ### Methods
@@ -318,4 +340,8 @@ The installation process in this project is adapted to debian-based linux distri
 
 ## Known issues
 
-\<no known issues\>
+### [Pipe error if client sends immediately after exiting start](https://github.com/nilshenrich/NetworkListener/issues/21)
+
+When a client sends a message to the listener immediately after the NetworkClient::start() method returned, the listener program throws a pipe error.
+
+Waiting for a short time after connecting to server will fix it on client side.
