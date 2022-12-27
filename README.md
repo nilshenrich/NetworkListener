@@ -342,6 +342,29 @@ The installation process in this project is adapted to debian-based linux distri
 
 ### [Pipe error if client stops immediately after exiting start](https://github.com/nilshenrich/NetworkListener/issues/21)
 
-When a client sends a message to the listener immediately after the NetworkClient::start() method returned, the listener program throws a pipe error.
+When a client sends a message to the listener immediately after the NetworkClient::start() method returned, the listener program throws a pipe error.\
+To fix this there are two possible solutions:
 
+1. On client side:\
 Waiting for a short time after connecting to server will fix it on client side.
+
+1. On server side:\
+If you implement a server application and don't trust the client, you can also handle or ignore the pipe error passing of of these code snippets to the beginning of your main function:
+
+    Ignore pipe error:
+
+    ```cpp
+    // Ignore pipe error
+    signal(SIGPIPE, SIG_IGN);
+    ```
+
+    Handle pipe error:
+
+    ```cpp
+    // Handle pipe error using a custom handler function
+    void sigpipe_handler(int)
+    {
+        // Do some stuff to handle pipe error
+    }
+    signal(SIGPIPE, sigpipe_handler);
+    ```
