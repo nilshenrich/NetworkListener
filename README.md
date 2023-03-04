@@ -20,7 +20,7 @@ A test run can be found [here](https://github.com/nilshenrich/NetworkTester/acti
     1. [Run example](#run-example)
 1. [System requirements](#system-requirements)
 1. [Known issues](#known-issues)
-    1. [Pipe error if client stops immediately after exiting start](#pipe-error-if-client-stops-immediately-after-exiting-start)
+    1. [Pipe error if TLS client closes immediately after connecting](#pipe-error-if-tls-client-closes-immediately-after-connecting)
 
 ## General explanation
 
@@ -340,16 +340,19 @@ The installation process in this project is adapted to debian-based linux distri
 
 ## Known issues
 
-### [Pipe error if client stops immediately after exiting start](https://github.com/nilshenrich/NetworkListener/issues/21)
+### [Pipe error if TLS client closes immediately after connecting](https://github.com/nilshenrich/NetworkListener/issues/21)
 
-When a client sends a message to the listener immediately after the NetworkClient::start() method returned, the listener program throws a pipe error.\
+When a TLS client stops immediately after the NetworkClient::start() method returned, the listener program throws a pipe error.\
+This is caused by the TLS handshake protocol. The client marks the connection to be established as soon as the server is authenticated. After that, the server proofs the client authentication, so a short time after the NetworkClient::start() method returned, the server is still in the TLS establishing phase.
+
 To fix this there are two possible solutions:
 
 1. On client side:\
-Waiting for a short time after connecting to server will fix it on client side.
+Waiting for a short time after connecting to server will fix it on client side.\
+Any kind of initialization message from server to client would also fix this issue. When the server is ready to send, the connection is fully established.
 
 1. On server side:\
-If you implement a server application and don't trust the client, you can also handle or ignore the pipe error passing of of these code snippets to the beginning of your main function:
+If you implement a server application and don't trust the client, you can also handle or ignore the pipe error pasting one of these code snippets to the beginning of your main function:
 
     Ignore pipe error:
 
