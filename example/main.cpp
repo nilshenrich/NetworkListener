@@ -11,8 +11,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <chrono>
-#include <thread>
 #include <memory>
 
 #include "NetworkListener/TcpServer.h"
@@ -37,15 +35,21 @@ void tls_forwarding_workOnEstablished(int id) { tlsServer->sendMsg(id, "Hello TL
 ofstream *tls_forwarding_messageStream(int id) { return new ofstream{"MessageStream_TLS_Client"s + to_string(id)}; }
 void tls_workOnClosed(int id) { cout << "Connection to TLS client " << id << " closed" << endl; }
 
+void printHelp()
+{
+    cout << "What mode shall be used?" << endl
+         << "    c: Continuous stream" << endl
+         << "    f: Fragmented messages" << endl
+         << "    q: Exit program" << endl;
+}
+
 int main()
 {
+    printHelp();
+
     // User decision
     while (true)
     {
-        cout << "What mode shall be used?" << endl
-             << "    c: Continuous stream" << endl
-             << "    f: Fragmented messages" << endl
-             << "    other key: Exit program" << endl;
         char decision;
         cin >> decision;
         switch (decision)
@@ -62,7 +66,6 @@ int main()
             tlsServer->setWorkOnEstablished(&tls_forwarding_workOnEstablished);
             tcpServer->start(8081);
             tlsServer->start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
-            this_thread::sleep_for(10s);
             break;
 
         case 'f':
@@ -77,11 +80,16 @@ int main()
             tlsServer->setWorkOnMessage(&tls_fragmented_workOnMessage);
             tcpServer->start(8081);
             tlsServer->start(8082, "../keys/ca/ca_cert.pem", "../keys/server/server_cert.pem", "../keys/server/server_key.pem");
-            this_thread::sleep_for(10s);
             break;
 
-        default:
+        case 'q':
+        case 'Q':
+            cout << "Exit example program" << endl;
             return 0;
+
+        default:
+            printHelp();
+            break;
         }
     }
 }
